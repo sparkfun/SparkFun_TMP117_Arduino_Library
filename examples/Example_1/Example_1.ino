@@ -50,7 +50,7 @@ void setup()
 {
   Wire.begin();
   Serial.begin(115200); // Start serial communication at 115200 baud
-  if(sensor.isConnected() == true)
+  if (sensor.isConnected() == true)
   {
     Serial.println("Connected");
   }
@@ -64,7 +64,7 @@ void setup()
   }
   else
   {
-    Serial.println("Device failed to setup :( ");
+    Serial.println("Device failed to setup");
   }
 }
 
@@ -73,17 +73,20 @@ void loop()
 {
   float tempC = sensor.readTempC();
   float tempF = sensor.readTempF();
-  
-  // Print temperature in C and F, and high and alert states.
-  Serial.print("Temperature in Celsius: ");
-  Serial.println(tempC);
-  Serial.print("Temperature in Fahrenheit: ");
-  Serial.println(tempF);
-  Serial.print("High Alert Status: ");
-  Serial.println(sensor.isHighAlert()); // Prints true if the upper threshold is reached and false otherwise
-  Serial.print("Low Alert Status: ");
-  Serial.println(sensor.isLowAlert()); // Prints true if the lower threshold is reached and false otherwise
-  Serial.println(); // Create a whitespace for easier readings
-  while(1); //Put in for debugging
-  delay(1000); // Wait 1 second before reading the temperature and alert statuses again
+
+  if ((sensor.begin() == true) & (sensor.isConnected() == true)) // Only prints temperature readings and Alert Statuses when successfully connected
+  {
+    // Print temperature in C and F, and high and alert states.
+    Serial.println(); // Create a white space for easier viewing
+    Serial.print("Temperature in Celsius: ");
+    Serial.println(tempC);
+    Serial.print("Temperature in Fahrenheit: ");
+    Serial.println(tempF);
+    /*  Alert statuses below for really high or really low temperature reading possibilities */
+    //  Serial.print("High Alert Status: ");
+    //  Serial.println(sensor.isHighAlert()); // Prints true if the upper threshold is reached and false otherwise
+    //  Serial.print("Low Alert Status: ");
+    //  Serial.println(sensor.isLowAlert()); // Prints true if the lower threshold is reached and false otherwise
+    delay(500); // Delay added for easier readings
+  }
 }

@@ -31,7 +31,7 @@ Distributed as-is; no warranty is given.
 #define DEVICE_ID_VALUE 0x0117
 
 // Resolution of the device, found on page 1 of the data sheet
-#define TMP117_RESOLUTION	(double)0.078125 
+#define TMP117_RESOLUTION	(double)0.0078125 
 
 enum TMP117_ALERT {NOALERT = 0, HIGHALERT, LOWALERT}; // Distinguishes the Alert type
 
@@ -56,6 +56,19 @@ typedef union{
 	uint8_t CONFIGURATION_COMBINED;
 } CONFIGURATION_REG;
 
+
+// Device ID Register used for checking if the device ID is the same as declared
+// This register is found on Page 30 of the datasheet in Table 15 and Figure 34
+typedef union{
+	struct 
+	{
+		uint16_t DID : 12; // Indicates the device ID
+		uint8_t REV : 4;   // Indicates the revision number
+	} DEVICE_ID_FIELDS;
+	uint16_t DEVICE_ID_COMBINED;
+} DEVICE_ID_REG;
+
+
 class TMP117
 { 
     public:
@@ -66,23 +79,22 @@ class TMP117
 		bool isConnected(); // Checks connection
 		float readTempC();	// Returns the temperature in degrees C
 		float readTempF();	// Converts readTempC result to degrees F
+		float temperatureOffset(); // Reads the offset temperature value from the register
 		TMP117_ALERT getAlert(); // Returns the type of alert being caused
 		bool isHighAlert(); // Sets an alert when the temperature is too high for the device
 		bool isLowAlert(); // Sets an alert when the temperature is too low for the device
 		void softReset(); // Performs a software reset on the Configuration Register Field bits
-		void conversionMode(); // Sets the conversion mode
-		void conversionCycleTime(); // Sets the conversion time for the device
-
 
 
 	private: 
 		TwoWire *_i2cPort = NULL; //The generic connection to user's chosen I2C hardware
-		uint8_t _address;   // Address of Temperature sensor (changed from int)
+		uint8_t _address; // Address of Temperature sensor (changed from int)
 
 		TMP117_ALERT alert_type; 
 	
 		// Read and write to registers
 		uint16_t readRegister(TMP117_Register reg); // Reads register bytes from sensor
+		void readRegisters(TMP117_Register reg, byte *buffer, byte len); // Reads multiple bytes from a sensor
 		void writeRegisters(TMP117_Register reg, byte *buffer, byte len); // Wires multiple bytes of data to the sensor
 		void writeRegister(TMP117_Register reg, byte data); // Wires single byte of data to the sensor
 

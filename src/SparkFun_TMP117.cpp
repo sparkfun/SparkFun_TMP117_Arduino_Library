@@ -58,22 +58,27 @@ bool TMP117::begin(TwoWire &wirePort, uint16_t address) // originally uint8_t
 	// Set device address and wire port to private variable
     _address = address;
     _i2cPort = &wirePort;
+	byte rawData[2]; // Array created for 
 
-    if (isConnected() == false)
+    if (isConnected() == false) // Returns false when not able to be connected
     {
         return false;
     }
-    // Read DEVICE_ID register
-    uint16_t deviceIDValue = readRegister(DEVICE_ID);
+
+	readRegisters(DEVICE_ID, rawData, 2); // Calls to read registers to pull all the bits to store in an array
+	byte MSB = rawData[0];
+	byte LSB = rawData[1];
+
+	uint16_t device_id_ = (MSB << 8) | (LSB & 0xFF);
 
     // DEVICE_ID should always be 0x0117
 	// Checks to see if properly connected
-    if (deviceIDValue != DEVICE_ID)
+    if (device_id_ != DEVICE_ID_VALUE)
     {
         return false;
     }
 
-    return true;
+    return true; // Returns true when all the checks are passed
 }
 
 
@@ -102,17 +107,38 @@ uint16_t TMP117::readRegister(TMP117_Register reg)
 {
     _i2cPort->beginTransmission((uint8_t)_address);
     _i2cPort->write(reg);
-    _i2cPort->endTransmission(false);               // endTransmission but keep the connection active
-    _i2cPort->requestFrom(_address, (byte)2); // Ask for 2 byte, once done, bus is released by default
+    _i2cPort->endTransmission(false);     // endTransmission but keep the connection active
+    _i2cPort->requestFrom(_address, (byte)1); // Ask for 1 byte, once done, bus is released by default
 
     // Wait for the data to come back
     if (_i2cPort->available())
     {
-        return _i2cPort->read(); // Return this one byte
+		return _i2cPort->read(); // Returns only one byte
     }
     else
     {
         return 0;
+    }
+}
+
+
+/* READ MULTIPLE REGISTERS
+    Read "en" bytes from the TMP117, starting at register "reg." Bytes are 
+    stored in "buffer" on exit.
+*/
+void TMP117::readRegisters(TMP117_Register reg, byte *buffer, byte len)
+{
+    _i2cPort->beginTransmission(_address);
+    _i2cPort->write(reg);
+    _i2cPort->endTransmission(false);           // endTransmission but keep the connection active
+    _i2cPort->requestFrom(_address, len); // Ask for bytes, once done, bus is released by default
+
+    // Wait for data to come back
+    if (_i2cPort->available() == len)
+    {
+        // Iterate through data from buffer
+        for (int i = 0; i < len; i++)
+            buffer[i] = _i2cPort->read();
     }
 }
 
@@ -125,7 +151,7 @@ void TMP117::writeRegisters(TMP117_Register reg, byte *buffer, byte len)
 {
     _i2cPort->beginTransmission((uint8_t)_address);
     _i2cPort->write(reg);
-    for (int i = 0; i < len; i++)
+    for (int i = 0; i < len; i++) // Loop to run through all the bits requested
         _i2cPort->write(buffer[i]);
     _i2cPort->endTransmission(); // Stop transmitting
 }
@@ -136,7 +162,7 @@ void TMP117::writeRegisters(TMP117_Register reg, byte *buffer, byte len)
 */
 void TMP117::writeRegister(TMP117_Register reg, byte data)
 {
-    writeRegisters(reg, &data, 1);
+    writeRegisters(reg, &data, 1); // Only calls to write to one byte in the register
 }
 
 
@@ -150,11 +176,16 @@ void TMP117::writeRegister(TMP117_Register reg, byte data)
 */
 float TMP117::readTempC()
 {
-	int16_t digitalTempC;      // Temperature stored in the TMP117 register (must be signed)
+	byte rawData[2] = {0}; // Sets the array of rawData equal to 0 initially
+	int16_t digitalTempC = 0;
+	readRegisters(TEMP_RESULT, rawData, 2); // Calls to read registers to pull all the bits to store in an array
+	byte MSB = rawData[0]; // Stores the most significant bits
+	byte LSB = rawData[1]; // Stores the least significant bits
 
-	digitalTempC = readRegister(TEMP_RESULT); //Reads the temperature from the sensor
+	//Shifting the MSB to be in the MSB place from storing then changing the LSB values
+	digitalTempC = (MSB << 8) | (LSB & 0xFF); // Must be signed
 
-	int16_t finalTempC = digitalTempC*TMP117_RESOLUTION;
+	float finalTempC = digitalTempC*TMP117_RESOLUTION; // Multiplies by the resolution for digital to final temp
 
 	return finalTempC;
 }
@@ -163,10 +194,27 @@ float TMP117::readTempC()
 /* READ TEMPERATURE FAHRENHEIT
 	This function calculates the fahrenheit reading from the
 	celsius reading initially found.
+	The device reads in celsius unless called by this function
 */
-float TMP117::readTempF()	// Module reads in celcius unless called by this function
+float TMP117::readTempF()	
 {
 	return readTempC()*9.0/5.0 + 32.0;
+}
+
+
+/* TEMPERATURE OFFSET
+	This function reads the temperature offset.
+	This register can also be written to, but is not included in this library.
+*/
+float TMP117::temperatureOffset() // Reads the temperature offset (for debugging purposes)
+{
+	byte rawData[2];
+	readRegisters(TEMP_OFFSET, rawData, 2); // Calls to read registers to pull all the bits to store in an array
+	byte MSB = rawData[0];
+	byte LSB = rawData[1];
+	int16_t tempOffset = (MSB << 8) | (LSB & 0xFF); // Must be signed
+	int16_t finalOffset = tempOffset*TMP117_RESOLUTION;
+
 }
 
 
@@ -234,37 +282,3 @@ void TMP117::softReset()
 	uint8_t soft_rst = reg.CONFIGURATION_FIELDS.SOFT_RESET;
 	writeRegister(soft_rst, 1); // Writes to the register SOFT_RESET to be 1 when called on
 }
-
-
-// /* CONVERSION MODE
-// 	This function sets the mode for the conversions.
-// 	This can be found in the datasheet on Page 25 Table 6.
-// 	Currently set in Continuous Conversion Mode.
-// */
-// void TMP117::conversionMode()
-// {
-// 	CONFIGURATION_REG reg;
-// 	reg.CONFIGURATION_COMBINED = readRegister(2); // Reads 2 bits from the register
-// 	uint8_t mode = reg.CONFIGURATION_FIELDS.MOD;
-// 	writeRegisters(cycle, 0b00, 2); // Continuous Conversion (CC)
-// 	// writeRegisters(cycle, 01, 2) // Shutdown (SD)
-// 	// writeRegisters(cycle, 10, 2) // Continuous Conversion (CC), Same as 00 (reads back = 00)
-// 	// writeRegisters(cycle, 11, 2) // One-Shot Conversion (OS)
-// }
-
-
-// /* CONVERSION CYCLE TIME
-// 	This function sets the conversion cycle time of the device.
-// 	This only works in Continuous Conversion mode, which was set 
-// 	in the above function
-// */
-// void conversionCycleTime()
-// {
-// 	CONFIGURATION_REG reg;
-// 	reg.CONFIGURATION_COMBINED = readRegister(3); // Reads 3 bits from the register
-// 	uint8_t cycle = reg.CONFIGURATION_FIELDS.CONV;
-// 	writeRegisters(cycle, 0b000, 3); // Sets the conversion cycle time to be between 15.5ms and 1s
-// 	// There is a chart of the conversion cycle times in the SparkFun_TMP117_Registers.h file
-// 	// They can also be found in Table 7 on Page 26 of the datasheet
-// }
-

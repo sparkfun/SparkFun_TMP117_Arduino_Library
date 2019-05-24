@@ -44,7 +44,8 @@ Distributed as-is; no warranty is given.
         7             16s     16s     16s      16s    C16S
 */
 
-enum TMP117_Register
+// Address of the registers (where to look to find the information in the registers)
+enum TMP117_Register 
 {
 	TEMP_RESULT = 0X00,
 	CONFIGURATION = 0x01,
