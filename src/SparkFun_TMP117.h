@@ -28,7 +28,7 @@ Distributed as-is; no warranty is given.
 #define TMP117_I2C_ADDR 0x48 // Address found on Page 19 of data sheet (GND)
 
 // Address found on page 23 Table 3 of the data sheet
-#define DEVICE_ID_VALUE 0x117
+#define DEVICE_ID_VALUE 0x0117
 
 // Resolution of the device, found on page 1 of the data sheet
 #define TMP117_RESOLUTION	(double)0.078125 
@@ -57,7 +57,7 @@ typedef union{
 } CONFIGURATION_REG;
 
 class TMP117
-{
+{ 
     public:
 		// Constructor 
         TMP117(byte address = TMP117_I2C_ADDR);
@@ -75,16 +75,16 @@ class TMP117
 
 
 
-		private: 
+	private: 
 		TwoWire *_i2cPort = NULL; //The generic connection to user's chosen I2C hardware
-		int _address;   // Address of Temperature sensor
+		uint8_t _address;   // Address of Temperature sensor (changed from int)
 
 		TMP117_ALERT alert_type; 
-		
+	
 		// Read and write to registers
-		//uint16_t readRegister(TMP117_Register reg); // Reads register bytes from sensor
-		//void writeRegisters(TMP117_Register reg, byte *buffer, byte len); // Wires multiple bytes of data to the sensor
-		//void writeRegister(TMP117_Register reg, byte data); // Wires single byte of data to the sensor
+		uint16_t readRegister(TMP117_Register reg); // Reads register bytes from sensor
+		void writeRegisters(TMP117_Register reg, byte *buffer, byte len); // Wires multiple bytes of data to the sensor
+		void writeRegister(TMP117_Register reg, byte data); // Wires single byte of data to the sensor
 
 };
 
