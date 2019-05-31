@@ -53,19 +53,19 @@ TMP117::TMP117(byte address)
 /* BEGIN INITIALIZATION
     This function initalizes the TMP117 sensor and opens up the registers.
 */
-bool TMP117::begin(TwoWire &wirePort, uint16_t address) // originally uint8_t
+bool TMP117::begin(uint8_t address, TwoWire &wirePort) // originally uint8_t
 {
 	// Set device address and wire port to private variable
     _address = address;
     _i2cPort = &wirePort;
-	byte rawData[2]; // Array created for 
+	byte rawData[2]; // Array created for values needed to be returned in for shifting
 
     if (isConnected() == false) // Returns false when not able to be connected
     {
         return false;
     }
 
-	readRegisters(DEVICE_ID, rawData, 2); // Calls to read registers to pull all the bits to store in an array
+	readRegisters(TMP117_DEVICE_ID, rawData, 2); // Calls to read registers to pull all the bits to store in an array
 	byte MSB = rawData[0];
 	byte LSB = rawData[1];
 
@@ -95,6 +95,7 @@ bool TMP117::isConnected()
 	}
 	else
 	{
+		Serial.println("Device unable to connect.");
 		return (false);
 	}
 }
@@ -137,7 +138,7 @@ void TMP117::readRegisters(TMP117_Register reg, byte *buffer, byte len)
     if (_i2cPort->available() == len)
     {
         // Iterate through data from buffer
-        for (int i = 0; i < len; i++)
+        for (uint8_t i = 0; i < len; i++)
             buffer[i] = _i2cPort->read();
     }
 }
@@ -178,7 +179,7 @@ float TMP117::readTempC()
 {
 	byte rawData[2] = {0}; // Sets the array of rawData equal to 0 initially
 	int16_t digitalTempC = 0;
-	readRegisters(TEMP_RESULT, rawData, 2); // Calls to read registers to pull all the bits to store in an array
+	readRegisters(TMP117_TEMP_RESULT, rawData, 2); // Calls to read registers to pull all the bits to store in an array
 	byte MSB = rawData[0]; // Stores the most significant bits
 	byte LSB = rawData[1]; // Stores the least significant bits
 
@@ -202,18 +203,30 @@ float TMP117::readTempF()
 }
 
 
-/* TEMPERATURE OFFSET
-	This function reads the temperature offset.
-	This register can also be written to, but is not included in this library.
+// Write function getTemperatureOffset and setTemperatureOffset
+
+/* GET TEMPERATURE OFFSET
+	This function reads the temperature offset. This reads from the register
+	value 0x07 (TMP117_TEMP_OFFSET)
 */
-float TMP117::temperatureOffset() // Reads the temperature offset (for debugging purposes)
+float TMP117::getTemperatureOffset() // Reads the temperature offset (for debugging purposes)
 {
 	byte rawData[2];
-	readRegisters(TEMP_OFFSET, rawData, 2); // Calls to read registers to pull all the bits to store in an array
+	readRegisters(TMP117_TEMP_OFFSET, rawData, 2); // Calls to read registers to pull all the bits to store in an array
 	byte MSB = rawData[0];
 	byte LSB = rawData[1];
 	int16_t tempOffset = (MSB << 8) | (LSB & 0xFF); // Must be signed
 	int16_t finalOffset = tempOffset*TMP117_RESOLUTION;
+	return finalOffset;
+}
+
+
+/* SET OFFSET TEMPERATURE
+	This function sets the offset temperature of the device.
+	This writes to the register value 0x07 (TMP117_TEMP_OFFSET)
+*/
+float TMP117::setTemperatureOffset()
+{
 
 }
 
@@ -236,7 +249,7 @@ bool TMP117::isHighAlert()
 {
 	CONFIGURATION_REG reg;
 	// Read current configuration register value declared in SparkFun_TMP117.h file
-	reg.CONFIGURATION_COMBINED = readRegister(1); // Reads 1 bit of information from the register
+	reg.CONFIGURATION_COMBINED = readRegister(1); 
 	uint8_t high_alert = reg.CONFIGURATION_FIELDS.HIGH_ALERT; // Picks which value to pull info from
 	if(high_alert == 1)
 	{
@@ -278,7 +291,118 @@ bool TMP117::isLowAlert()
 void TMP117::softReset()
 {
 	CONFIGURATION_REG reg;
-	reg.CONFIGURATION_COMBINED = readRegister(1); // Reads 1 bit from the register
-	uint8_t soft_rst = reg.CONFIGURATION_FIELDS.SOFT_RESET;
+	reg.CONFIGURATION_COMBINED = readRegister(1); // Reads 1 bit of information
+	uint8_t soft_rst = reg.CONFIGURATION_FIELDS.SOFT_RESET; // Stores the information from the SOFT_RESET bit of the register
 	writeRegister(soft_rst, 1); // Writes to the register SOFT_RESET to be 1 when called on
+}
+
+
+/* SET CONVERSION MODE
+	This function writes the mode for the conversions.
+	This can be found in the datasheet on Page 25 Table 6.
+	Currently set in Continuous Conversion Mode.
+*/
+void TMP117::setConversionMode()
+{
+	CONFIGURATION_REG reg;
+	reg.CONFIGURATION_COMBINED = readRegister(2); // Reads 2 bits of information
+	uint8_t mode = reg.CONFIGURATION_FIELDS.MOD; // Store the information from the MOD register
+	writeRegisters(mode, 0b00, 2); // Continuous Conversion (CC)
+	// writeRegisters(cycle, 01, 2) // Shutdown (SD)
+	// writeRegisters(cycle, 10, 2) // Continuous Conversion (CC), Same as 00 (reads back = 00)
+	// writeRegisters(cycle, 11, 2) // One-Shot Conversion (OS)
+}
+
+/* GET CONVERSION MODE
+	This function reads the mode for the conversions.
+	This can be found in the datasheet on Page 25 Table 6. 
+*/
+uint8_t TMP117::getConversionMode()
+{
+
+}
+
+
+/* GET CONVERSION CYCLE TIME
+	This function gets the conversion cycle time of the device.
+	This only works in Continuous Conversion mode, which was set 
+	in the above function
+*/
+uint8_t TMP117::getConversionCycleTime()
+{
+	// CONFIGURATION_REG reg;
+	// reg.CONFIGURATION_COMBINED = readRegister(3); // Reads 3 bits of information
+	// uint8_t cycle = reg.CONFIGURATION_FIELDS.CONV; // Stores the information from the CONV register
+	// return cycle;
+}
+
+
+/* SET CONVERSION CYCLE TIME
+	This function sets the conversion cycle time of the device.
+	This only works in Continuous Conversion mode, which was set 
+	in the above function
+*/
+void TMP117::setConversionCycleTime()
+{
+	// CONFIGURATION_REG reg;
+	// reg.CONFIGURATION_COMBINED = readRegister(3); // Reads 3 bits of information
+	// uint8_t cycle = reg.CONFIGURATION_FIELDS.CONV; // Stores the information from the CONV register
+	// writeRegisters(cycle, 0b000, 3); // Sets the conversion cycle time to be between 15.5ms and 1s
+	// There is a chart of the conversion cycle times in the SparkFun_TMP117_Registers.h file
+	// They can also be found in Table 7 on Page 26 of the datasheet
+}
+
+
+
+/* UNSIGNED WRITE REGISTER 16
+	This function is used for converting all the values that have
+	been read in 8 bit format to a 16 bit value.
+	The functions getTemperatureOffset(), setTemperatureOffset, readTempC() call this.
+*/
+uint16_t TMP117::unsignedWriteRegister16()
+{
+	byte rawData[2];
+	byte MSB = rawData[0];
+	byte LSB = rawData[1];
+	uint16_t unsignedValue = (MSB << 8) | (LSB & 0xFF); // Must be unsigned
+	return unsignedValue;
+}
+
+
+/* SIGNED WRITE REGISTER 16
+	This function is used for converting all the values that have
+	been read in 8 bit format to a 16 bit value.
+	The function begin() calls this.
+*/
+uint16_t TMP117::signedWriteRegister16()
+{
+	byte rawData[2];
+	byte MSB = rawData[0];
+	byte LSB = rawData[1];
+	int16_t signedValue = (MSB << 8) | (LSB & 0xFF); // Must be signed
+	return signedValue;
+}
+
+
+/* DATA READY
+	This function checks to see if there is data ready to be sent
+	from the TMP117. This can be found in Page 25 Table 6 of the 
+	data sheet.
+*/
+bool TMP117::dataReady()
+{
+	CONFIGURATION_REG reg;
+	// Read current configuration register value declared in SparkFun_TMP117.h file
+	reg.CONFIGURATION_COMBINED = readRegister(1); 
+	uint8_t ready = reg.CONFIGURATION_FIELDS.DATA_READY;
+
+	if(ready == 1)
+	{
+		return true;
+	}
+	else
+	{
+		Serial.println("Data not available");
+		return false;
+	}
 }

@@ -2,12 +2,11 @@
   SparkFun_TMP117_Breakout_Example.ino
   Example for the TMP117 I2C Temperature Sensor
   Madison Chodikov @ SparkFun Electronics
-  May 16 2019
+  May 29 2019
   ~
 
   This sketch configures the TMP117 temperature sensor and prints the
-  temperature and alert state (both from the physical pin, as well as by
-  reading from the configuration register.)
+  temperature in degrees celsius and fahrenheit.
 
   Resources:
   Wire.h (included with Arduino IDE)
@@ -49,16 +48,8 @@ void setup()
 {
   Wire.begin();
   Serial.begin(115200); // Start serial communication at 115200 baud
-  Serial.println("TMP117 Example");
-  if (sensor.isConnected() == true)
-  {
-    Serial.println("Connected");
-  }
-  else
-  {
-    Serial.println("Unable to connect");
-  }
-  
+  Serial.println("TMP117 Example 1: Basic Readings");
+
   if (sensor.begin() == true)
   {
     Serial.println("Begin");
@@ -72,22 +63,16 @@ void setup()
 
 void loop()
 {
+//  if (sensor.dataReady() == true)
+//  {
   float tempC = sensor.readTempC();
   float tempF = sensor.readTempF();
-
-  if ((sensor.begin() == true) & (sensor.isConnected() == true)) // Only prints temperature readings and Alert Statuses when successfully connected
-  {
-    // Print temperature in C and F, and high and alert states.
-    Serial.println(); // Create a white space for easier viewing
-    Serial.print("Temperature in Celsius: ");
-    Serial.println(tempC);
-    Serial.print("Temperature in Fahrenheit: ");
-    Serial.println(tempF);
-    /*  Alert statuses below for really high or really low temperature reading possibilities */
-    //  Serial.print("High Alert Status: ");
-    //  Serial.println(sensor.isHighAlert()); // Prints true if the upper threshold is reached and false otherwise
-    //  Serial.print("Low Alert Status: ");
-    //  Serial.println(sensor.isLowAlert()); // Prints true if the lower threshold is reached and false otherwise
-    delay(500); // Delay added for easier readings
-  }
+  // Print temperature in C and F, and high and alert states.
+  Serial.println(); // Create a white space for easier viewing
+  Serial.print("Temperature in Celsius: ");
+  Serial.println(tempC);
+  Serial.print("Temperature in Fahrenheit: ");
+  Serial.println(tempF);
+  delay(500); // Delay added for easier readings
+//  }
 }

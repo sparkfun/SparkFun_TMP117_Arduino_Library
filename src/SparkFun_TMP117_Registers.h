@@ -28,7 +28,7 @@ Distributed as-is; no warranty is given.
    - ±0.2°C (Maximum) From –40°C to +100°C
    - ±0.25°C (Maximum) From –55°C to +125°C
    - ±0.3°C (Maximum) From –55°C to +150°C
-   -Low Power Consumption 3.5-µA, 1-Hz Conversion Cycle
+   - Low Power Consumption 3.5-µA, 1-Hz Conversion Cycle
 */
 
 /*  Conversion Cycle Time in CC Mode (found on the datasheet page 26 table 6)
@@ -47,16 +47,16 @@ Distributed as-is; no warranty is given.
 // Address of the registers (where to look to find the information in the registers)
 enum TMP117_Register 
 {
-	TEMP_RESULT = 0X00,
-	CONFIGURATION = 0x01,
-	T_HIGH_LIMIT = 0X02,
-	T_LOW_LIMIT = 0X03,
-	EEPROM_UL = 0X04,
-	EEPROM1 = 0X05,
-	EEPROM2 = 0X06,
-	TEMP_OFFSET = 0X07,
-	EEPROM3 = 0X08,
-	DEVICE_ID = 0X0F
+	TMP117_TEMP_RESULT = 0X00,
+	TMP117_CONFIGURATION = 0x01,
+	TMP117_T_HIGH_LIMIT = 0X02,
+	TMP117_T_LOW_LIMIT = 0X03,
+	TMP117_EEPROM_UL = 0X04,
+	TMP117_EEPROM1 = 0X05,
+	TMP117_EEPROM2 = 0X06,
+	TMP117_TEMP_OFFSET = 0X07,
+	TMP117_EEPROM3 = 0X08,
+	TMP117_DEVICE_ID = 0X0F
 };
 
 

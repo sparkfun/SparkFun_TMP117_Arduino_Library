@@ -75,7 +75,7 @@ class TMP117
 		// Constructor 
         TMP117(byte address = TMP117_I2C_ADDR);
 
-        bool begin(TwoWire &wirePort = Wire, uint16_t deviceAddress = TMP117_I2C_ADDR);   //Initialize the TMP117 sensor at given address
+        bool begin(uint8_t deviceAddress = TMP117_I2C_ADDR, TwoWire &wirePort = Wire);   //Initialize the TMP117 sensor at given address
 		bool isConnected(); // Checks connection
 		float readTempC();	// Returns the temperature in degrees C
 		float readTempF();	// Converts readTempC result to degrees F
@@ -84,7 +84,15 @@ class TMP117
 		bool isHighAlert(); // Sets an alert when the temperature is too high for the device
 		bool isLowAlert(); // Sets an alert when the temperature is too low for the device
 		void softReset(); // Performs a software reset on the Configuration Register Field bits
-
+		float getTemperatureOffset(); // Reads the temperature offset
+		float setTemperatureOffset(); // Writes to the temperature offset
+		uint8_t getConversionMode(); // Checks to see the Conversion Mode the device is currently in
+		void setConversionMode(); // Sets the Conversion Mode of the device (4 different types)
+		uint8_t getConversionCycleTime(); // Read from the Conversion Cycle Time register
+		void setConversionCycleTime(); // Write to the Conversion Cycle Time register
+		bool dataReady(); // Checks to see if there is data ready from the device
+		uint16_t unsignedWriteRegister16(); // Register to simplify other functions with combining 16 bit numbers
+		uint16_t signedWriteRegister16(); // Register to simplify other functions with combining 16 bit numbers
 
 	private: 
 		TwoWire *_i2cPort = NULL; //The generic connection to user's chosen I2C hardware
@@ -97,7 +105,6 @@ class TMP117
 		void readRegisters(TMP117_Register reg, byte *buffer, byte len); // Reads multiple bytes from a sensor
 		void writeRegisters(TMP117_Register reg, byte *buffer, byte len); // Wires multiple bytes of data to the sensor
 		void writeRegister(TMP117_Register reg, byte data); // Wires single byte of data to the sensor
-
 };
 
 #endif
