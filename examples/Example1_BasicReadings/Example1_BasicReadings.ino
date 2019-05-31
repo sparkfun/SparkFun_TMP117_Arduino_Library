@@ -36,11 +36,11 @@
 #include <Wire.h> // Used to establish serial communication on the I2C bus
 #include <SparkFun_TMP117.h> // Used to send and recieve specific information from our sensor
 
-// The default address of the device is 0x48
+// The default address of the device is 0x48 = 72
 // Sensor address can be changed with an external jumper to:
-// VCC = 0x49
-// SDA = 0x4A
-// SCL = 0x4B
+// VCC = 0x49 = 73
+// SDA = 0x4A = 74
+// SCL = 0x4B = 75
 TMP117 sensor; // Initalize sensor
 
 
@@ -48,6 +48,7 @@ void setup()
 {
   Wire.begin();
   Serial.begin(115200); // Start serial communication at 115200 baud
+  sensor.setAddress(0x48
   Serial.println("TMP117 Example 1: Basic Readings");
 
   if (sensor.begin() == true)
@@ -63,8 +64,7 @@ void setup()
 
 void loop()
 {
-//  if (sensor.dataReady() == true)
-//  {
+  sensor.dataReady();
   float tempC = sensor.readTempC();
   float tempF = sensor.readTempF();
   // Print temperature in C and F, and high and alert states.
@@ -74,5 +74,5 @@ void loop()
   Serial.print("Temperature in Fahrenheit: ");
   Serial.println(tempF);
   delay(500); // Delay added for easier readings
-//  }
+  
 }

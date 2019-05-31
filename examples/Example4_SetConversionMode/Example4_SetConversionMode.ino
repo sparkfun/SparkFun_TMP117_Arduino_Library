@@ -60,8 +60,22 @@ void setup()
   }
 }
 
+/* There are 4 different modes
+ Continuous Conversion (CC) = 0b00 = 0
+ Shutdown (SD) = 0b01 = 1
+ Continuous Conversion (CC), Same as 00 (Reads back = 00) = 0b10 = 2
+ One-Shot Conversion (OS) = 0b11 = 3
+*/
+
+int mode = 0;
+
 void loop()
 {
-
-
+  Serial.print("Current Conversion Mode: ");
+  sensor.getConversionMode();
+  Serial.println();
+  Serial.println("Enter your mode of Conversion (number 1-4): ");
+  
+  mode = Serial.read();
+  sensor.setConversionMode(mode);
 }
