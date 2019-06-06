@@ -48,7 +48,8 @@ void setup()
 {
   Wire.begin();
   Serial.begin(115200); // Start serial communication at 115200 baud
-  sensor.setAddress(0x48
+  Wire.setClock(400000); // Set clock speed to be the fastest for better communication (fast mode)
+  // sensor.setAddress(0x48);
   Serial.println("TMP117 Example 1: Basic Readings");
 
   if (sensor.begin() == true)
@@ -64,15 +65,22 @@ void setup()
 
 void loop()
 {
-  sensor.dataReady();
-  float tempC = sensor.readTempC();
-  float tempF = sensor.readTempF();
-  // Print temperature in C and F, and high and alert states.
-  Serial.println(); // Create a white space for easier viewing
-  Serial.print("Temperature in Celsius: ");
-  Serial.println(tempC);
-  Serial.print("Temperature in Fahrenheit: ");
-  Serial.println(tempF);
-  delay(500); // Delay added for easier readings
-  
+  if (sensor.dataReady() == true)
+  {
+    sensor.dataReady();
+    float tempC = sensor.readTempC();
+    float tempF = sensor.readTempF();
+    // Print temperature in C and F, and high and alert states.
+    Serial.println(); // Create a white space for easier viewing
+    Serial.print("Temperature in Celsius: ");
+    Serial.println(tempC);
+    Serial.print("Temperature in Fahrenheit: ");
+    Serial.println(tempF);
+    delay(500); // Delay added for easier readings
+  }
+  else
+  {
+    Serial.println("whoops");
+  }
+
 }

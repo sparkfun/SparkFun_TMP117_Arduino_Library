@@ -66,6 +66,10 @@ uint8_t TMP117::getAddress()
 	The sensor can be used to connect up to 4 devices if the addresses
 	are called correctly (Found on Page 19, Table 2)
 */
+void TMP117::setAddress(uint8_t addr)
+{
+
+}
 
 
 /* BEGIN INITIALIZATION

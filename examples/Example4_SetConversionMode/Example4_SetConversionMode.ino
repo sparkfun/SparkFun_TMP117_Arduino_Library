@@ -48,6 +48,7 @@ void setup()
 {
   Wire.begin();
   Serial.begin(115200); // Start serial communication at 115200 baud
+  Wire.setClock(400000); // Set clock speed to be the fastest for better communication (fast mode)
   Serial.println("TMP117 Example 4: Set Conversion Mode");
 
   if (sensor.begin() == true)
