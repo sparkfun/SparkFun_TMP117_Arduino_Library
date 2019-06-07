@@ -36,7 +36,7 @@
 #include <Wire.h> // Used to establish serial communication on the I2C bus
 #include <SparkFun_TMP117.h> // Used to send and recieve specific information from our sensor
 
-// The default address of the device is 0x48
+// The default address of the device is 0x48 (GND)
 // Sensor address can be changed with an external jumper to:
 // VCC = 0x49
 // SDA = 0x4A
@@ -50,33 +50,46 @@ void setup()
   Serial.begin(115200); // Start serial communication at 115200 baud
   Wire.setClock(400000); // Set clock speed to be the fastest for better communication (fast mode)
   Serial.println("TMP117 Example 4: Set Conversion Mode");
-
-  if (sensor.begin() == true)
-  {
-    Serial.println("Begin");
-  }
-  else
-  {
-    Serial.println("Device failed to setup");
-  }
+  Serial.println(); // Create a whitespace for easier readings
 }
 
+
 /* There are 4 different modes
- Continuous Conversion (CC) = 0b00 = 0
- Shutdown (SD) = 0b01 = 1
- Continuous Conversion (CC), Same as 00 (Reads back = 00) = 0b10 = 2
- One-Shot Conversion (OS) = 0b11 = 3
+  Continuous Conversion (CC) = 0b00 = 0
+  Shutdown (SD) = 0b01 = 1
+  Continuous Conversion (CC), Same as 00 (Reads back = 00) = 0b10 = 2
+  One-Shot Conversion (OS) = 0b11 = 3
 */
 
-int mode = 0;
+char mode = "";
 
 void loop()
 {
-  Serial.print("Current Conversion Mode: ");
-  sensor.getConversionMode();
-  Serial.println();
-  Serial.println("Enter your mode of Conversion (number 1-4): ");
+  if (sensor.begin() == true)
+  {
+    Serial.print("Current Conversion Mode: ");
+    Serial.println(sensor.getConversionMode());
+    Serial.println("Enter your mode of Conversion (number 0 - 3): ");
+    while (Serial.available() == 0); // Waits for the user input
+    mode = Serial.read(); // Reads the input string from serial port
+    Serial.print("Number recieved: ");
+    Serial.println(mode);
+    delay(500);
+    if (mode == '0' | mode == '1' | mode == '2' | mode == '3')
+    {
+      sensor.setConversionMode(mode);
+      Serial.println();
+      delay(500);
+    }
+    else
+    {
+      Serial.println("Conversion mode unsuccessfully set - Please enter a number 0 - 3");
+    }
+    delay(1000);
+  }
   
-  mode = Serial.read();
-  sensor.setConversionMode(mode);
+  else // Runs when the device was unable to setup properly
+  {
+    Serial.println("Device failed to setup");
+  }
 }

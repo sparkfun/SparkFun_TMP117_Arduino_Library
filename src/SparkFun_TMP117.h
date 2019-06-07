@@ -75,9 +75,11 @@ class TMP117
 		// Constructor 
         TMP117(byte address = TMP117_I2C_ADDR);
 
-        bool begin(uint8_t deviceAddress = TMP117_I2C_ADDR, TwoWire &wirePort = Wire);   //Initialize the TMP117 sensor at given address
+        // bool begin(uint8_t deviceAddress = TMP117_I2C_ADDR, TwoWire &wirePort = Wire);   //Initialize the TMP117 sensor at given address
+		bool begin_(uint8_t address, TwoWire &wirePort); // Test 
 		uint8_t getAddress(); // Lets the user see the current address of the device
 		void setAddress(uint8_t addr); // Lets the user set the address of the device
+		bool begin_(uint8_t address, TwoWire &wirePort); // Initalizes sensor and opens registers
 		bool isConnected(); // Checks connection
 		float readTempC();	// Returns the temperature in degrees C
 		float readTempF();	// Converts readTempC result to degrees F
@@ -93,8 +95,8 @@ class TMP117
 		uint8_t getConversionCycleTime(); // Read from the Conversion Cycle Time register
 		void setConversionCycleTime(uint8_t cycle); // Write to the Conversion Cycle Time register
 		bool dataReady(); // Checks to see if there is data ready from the device
-		// uint16_t unsignedWriteRegister16(); // Register to simplify other functions with combining 16 bit numbers
-		// int16_t signedWriteRegister16(); // Register to simplify other functions with combining 16 bit numbers
+		uint16_t unsignedWriteRegister16(byte rawData[2]); // Register to simplify other functions with combining 16 bit numbers
+		int16_t signedWriteRegister16(byte rawData[2]); // Register to simplify other functions with combining 16 bit numbers
 
 	private: 
 		TwoWire *_i2cPort = NULL; //The generic connection to user's chosen I2C hardware

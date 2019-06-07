@@ -68,14 +68,15 @@ uint8_t TMP117::getAddress()
 */
 void TMP117::setAddress(uint8_t addr)
 {
-
+	TMP117_I2C_ADDR = addr;
 }
 
 
 /* BEGIN INITIALIZATION
     This function initalizes the TMP117 sensor and opens up the registers.
+	This returns true when it was successfully set up and false otherwise.
 */
-bool TMP117::begin(uint8_t address, TwoWire &wirePort) // originally uint8_t
+bool TMP117::begin_(uint8_t address, TwoWire &wirePort) // originally uint8_t
 {
 	// Set device address and wire port to private variable
     _address = address;
@@ -88,10 +89,7 @@ bool TMP117::begin(uint8_t address, TwoWire &wirePort) // originally uint8_t
     }
 
 	readRegisters(TMP117_DEVICE_ID, rawData, 2); // Calls to read registers to pull all the bits to store in an array
-	byte MSB = rawData[0];
-	byte LSB = rawData[1];
-
-	uint16_t device_id_ = (MSB << 8) | (LSB & 0xFF);
+	uint16_t device_id_ = signedWriteRegister16(rawData); // send to other function to get actual device id value
 
     // DEVICE_ID should always be 0x0117
 	// Checks to see if properly connected
@@ -102,6 +100,8 @@ bool TMP117::begin(uint8_t address, TwoWire &wirePort) // originally uint8_t
 
     return true; // Returns true when all the checks are passed
 }
+
+// Take out once done debugging since the real version is down at the bottom
 
 
 /* IS CONNECTED
@@ -202,11 +202,7 @@ float TMP117::readTempC()
 	byte rawData[2] = {0}; // Sets the array of rawData equal to 0 initially
 	int16_t digitalTempC = 0;
 	readRegisters(TMP117_TEMP_RESULT, rawData, 2); // Calls to read registers to pull all the bits to store in an array
-	byte MSB = rawData[0]; // Stores the most significant bits
-	byte LSB = rawData[1]; // Stores the least significant bits
-
-	//Shifting the MSB to be in the MSB place from storing then changing the LSB values
-	digitalTempC = (MSB << 8) | (LSB & 0xFF); // Must be signed
+	digitalTempC = unsignedWriteRegister16(rawData[2]);
 
 	float finalTempC = digitalTempC*TMP117_RESOLUTION; // Multiplies by the resolution for digital to final temp
 
@@ -229,14 +225,12 @@ float TMP117::readTempF()
 	This function reads the temperature offset. This reads from the register
 	value 0x07 (TMP117_TEMP_OFFSET)
 */
-float TMP117::getTemperatureOffset() // Reads the temperature offset (for debugging purposes)
+float TMP117::getTemperatureOffset() // Reads the temperature offset
 {
 	byte rawData[2];
 	readRegisters(TMP117_TEMP_OFFSET, rawData, 2); // Calls to read registers to pull all the bits to store in an array
-	byte MSB = rawData[0];
-	byte LSB = rawData[1];
-	int16_t tempOffset = (MSB << 8) | (LSB & 0xFF); // Must be signed
-	int16_t finalOffset = tempOffset*TMP117_RESOLUTION;
+	int16_t combined = unsignedWriteRegister16(rawData[2]);
+	int16_t finalOffset = combined*TMP117_RESOLUTION;
 	return finalOffset;
 }
 
@@ -247,7 +241,9 @@ float TMP117::getTemperatureOffset() // Reads the temperature offset (for debugg
 */
 float TMP117::setTemperatureOffset()
 {
-
+	CONFIGURATION_REG reg;
+	reg.CONFIGURATION_COMBINED = time; 
+	writeRegister(TMP117_CONFIGURATION, reg.CONFIGURATION_COMBINED);
 }
 
 
@@ -344,6 +340,7 @@ uint8_t TMP117::getConversionMode()
 	return mode;
 }
 
+
 /* GET CONVERSION CYCLE TIME
 	This function gets the conversion cycle time of the device.
 	This only works in Continuous Conversion mode, which was set 
@@ -371,6 +368,7 @@ void TMP117::setConversionCycleTime(uint8_t cycle)
 	reg.CONFIGURATION_FIELDS.CONV = 0b000;
 	// uint8_t cycle = reg.CONFIGURATION_FIELDS.CONV; 
 	writeRegister(TMP117_CONFIGURATION, reg.CONFIGURATION_COMBINED); 
+
 	// There is a chart of the conversion cycle times in the SparkFun_TMP117_Registers.h file
 	// They can also be found in Table 7 on Page 26 of the datasheet
 }
@@ -379,17 +377,16 @@ void TMP117::setConversionCycleTime(uint8_t cycle)
 /* UNSIGNED WRITE REGISTER 16
 	This function is used for converting all the values that have
 	been read in 8 bit format to a 16 bit value.
-	The functions getTemperatureOffset(), setTemperatureOffset, readTempC() call this.
+	The functions getTemperatureOffset(), readTempC() call this.
 */
-// uint16_t TMP117::unsignedWriteRegister16(register reg)
-// {
-// 	byte rawData[2];
-// 	readRegisters(reg ,rawData, 2);
-// 	byte MSB = rawData[0];
-// 	byte LSB = rawData[1];
-// 	uint16_t unsignedValue = (MSB << 8) | (LSB & 0xFF); // Must be unsigned
-// 	return unsignedValue;
-// }
+uint16_t TMP117::unsignedWriteRegister16(byte rawData[2])
+{
+	byte rawData[2];
+	byte MSB = rawData[0];
+	byte LSB = rawData[1];
+	uint16_t unsignedValue = (MSB << 8) | (LSB & 0xFF); // Must be unsigned
+	return unsignedValue;
+}
 
 
 /* SIGNED WRITE REGISTER 16
@@ -397,14 +394,14 @@ void TMP117::setConversionCycleTime(uint8_t cycle)
 	been read in 8 bit format to a 16 bit value.
 	The function begin() calls this.
 */
-// int16_t TMP117::signedWriteRegister16(register reg)
-// {
-// 	byte rawData[2];
-// 	byte MSB = rawData[0];
-// 	byte LSB = rawData[1];
-// 	int16_t signedValue = (MSB << 8) | (LSB & 0xFF); // Must be signed
-// 	return signedValue;
-// }
+int16_t TMP117::signedWriteRegister16(byte rawData[2])
+{
+	byte rawData[2];
+	byte MSB = rawData[0];
+	byte LSB = rawData[1];
+	int16_t signedValue = (MSB << 8) | (LSB & 0xFF); // Must be signed
+	return signedValue;
+}
 
 
 /* DATA READY

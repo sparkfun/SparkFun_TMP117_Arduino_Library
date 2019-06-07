@@ -36,7 +36,7 @@
 #include <Wire.h> // Used to establish serial communication on the I2C bus
 #include <SparkFun_TMP117.h> // Used to send and recieve specific information from our sensor
 
-// The default address of the device is 0x48
+// The default address of the device is 0x48 (GND)
 // Sensor address can be changed with an external jumper to:
 // VCC = 0x49
 // SDA = 0x4A
@@ -44,28 +44,29 @@
 TMP117 sensor; // Initalize sensor
 
 
-void setup() 
+void setup()
 {
   Wire.begin();
   Serial.begin(115200); // Start serial communication at 115200 baud
   Wire.setClock(400000); // Set clock speed to be the fastest for better communication (fast mode)
   Serial.println("TMP117 Example 2: Alert Statuses");
+}
 
+void loop()
+{
+  /*  Alert statuses below for really high or really low temperature reading possibilities
+      High Alert = 150°C, Low Alert = -55°C*/
   if (sensor.begin() == true)
   {
-    Serial.println("Begin");
+    Serial.print("High Alert Status: ");
+    Serial.println(sensor.isHighAlert()); // Prints true if the upper threshold is reached and false otherwise
+    Serial.print("Low Alert Status: ");
+    Serial.println(sensor.isLowAlert()); // Prints true if the lower threshold is reached and false otherwise
+    Serial.println();
+    delay(1000); // Delay for 1 second before printing again
   }
   else
   {
     Serial.println("Device failed to setup");
   }
-}
-
-void loop()
-{
-  /*  Alert statuses below for really high or really low temperature reading possibilities */
-  Serial.print("High Alert Status: ");
-  Serial.println(sensor.isHighAlert()); // Prints true if the upper threshold is reached and false otherwise
-  Serial.print("Low Alert Status: ");
-  Serial.println(sensor.isLowAlert()); // Prints true if the lower threshold is reached and false otherwise
 }
