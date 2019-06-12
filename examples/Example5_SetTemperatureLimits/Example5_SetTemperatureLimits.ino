@@ -2,11 +2,11 @@
   SparkFun_TMP117_Breakout_Example.ino
   Example for the TMP117 I2C Temperature Sensor
   Madison Chodikov @ SparkFun Electronics
-  May 29 2019
+  June 11 2019
   ~
 
   This sketch configures the TMP117 temperature sensor and prints the
-  temperature in degrees celsius and fahrenheit.
+  alert state of the temperature sensor.
 
   Resources:
   Wire.h (included with Arduino IDE)
@@ -36,11 +36,11 @@
 #include <Wire.h> // Used to establish serial communication on the I2C bus
 #include <SparkFun_TMP117.h> // Used to send and recieve specific information from our sensor
 
-// The default address of the device is 0x48 = 72 (GND)
+// The default address of the device is 0x48 (GND)
 // Sensor address can be changed with an external jumper to:
-// VCC = 0x49 = 73
-// SDA = 0x4A = 74
-// SCL = 0x4B = 75
+// VCC = 0x49
+// SDA = 0x4A
+// SCL = 0x4B
 TMP117 sensor; // Initalize sensor
 
 
@@ -49,50 +49,57 @@ void setup()
   Wire.begin();
   Serial.begin(115200); // Start serial communication at 115200 baud
   Wire.setClock(400000); // Set clock speed to be the fastest for better communication (fast mode)
-  sensor.setAddress(0x48);
-
-  Serial.println("TMP117 Example 1: Basic Readings");
+  Serial.println("TMP117 Example 5: Setting High and Low Temperature Limits");
   if (sensor.begin() == true)
   {
     Serial.println("Begin");
   }
   else
   {
-    Serial.println("Device failed to setup.");
+    Serial.println("Device failed to setup");
     while (1);
   }
-// Code commented out below for debugging purposes, delete once this sketch is finalized
-//  uint16_t deviceID = sensor.readRegister(TMP117_DEVICE_ID);
-//
-//  Serial.print("deviceID: 0x");
-//  Serial.println(deviceID, HEX);
-//
-//  Serial.print("deviceID: 0b");
-//  Serial.println(deviceID, BIN);
-//
-//    while(1);
-  
-  sensor.isConnected();
 }
 
 
 void loop()
 {
-  if (sensor.dataReady() == true) // Function to make sure that there is data ready to be printed, only prints temperature values when data is ready
+  if (sensor.begin() == true)
   {
-    float tempC = sensor.readTempC();
-    float tempF = sensor.readTempF();
-    // Print temperature in C and F
-    Serial.println(); // Create a white space for easier viewing
-    Serial.print("Temperature in Celsius: ");
-    Serial.println(tempC);
-    Serial.print("Temperature in Fahrenheit: ");
-    Serial.println(tempF);
-    delay(500); // Delay added for easier readings
-  }
-  else
-  {
+    Serial.print("Current Low Limit: ");
+    Serial.println(sensor.getConversionMode());
+    Serial.print("Current High Limit: ");
+    Serial.println("Enter which limit to change, 1 for Low Limit and 2 for High Limit: ");
+    while (Serial.available() == 0); // Waits for the user input
+    mode = Serial.read(); // Reads the input from the serial port
+    if (mode == 1)
+    {
+      Serial.println("Please enter Low Limit Temperature (between -256 and 256): ");
+    }
+    else if (mode == 2)
+    {
+      while (Serial.available() == 0); // Waits for the user input
+      mode = Serial.read(); // Reads the input from the serial port
+    }
+    else
+    {
+      Serial.println("Please enter 1 or 2");
+    }
+
+
+    // Left for reference 
+    Serial.print("Number recieved: ");
+    Serial.println(mode);
     delay(500);
+    if (mode == '0' || mode == '1' || mode == '2' || mode == '3')
+    {
+      sensor.setConversionMode(mode);
+      Serial.println();
+      delay(500);
+    }
+    else
+    {
+      Serial.println("Conversion mode unsuccessfully set - Please enter a number 0 - 3");
+    }
+    delay(1000);
   }
-  
-}

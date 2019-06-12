@@ -44,8 +44,7 @@
 TMP117 sensor; // Initalize sensor
 
 
-
-void setup() 
+void setup()
 {
   Wire.begin();
   Serial.begin(115200); // Start serial communication at 115200 baud
@@ -53,11 +52,20 @@ void setup()
   Serial.println("TMP117 Example 3: Set Offset Temperature Value");
 }
 
-void loop() 
+
+float tempOffset = 0;
+
+void loop()
 {
-    if (sensor.begin() == true)
+  if (sensor.begin() == true)
   {
-    
+    Serial.print("Current temperature offset (in °C): ");
+    Serial.println(sensor.getTemperatureOffset());
+    Serial.print("Enter new temperature offset (in °C): ");
+    while (Serial.available() == 0); // Waits for the user input
+    tempOffset = Serial.read(); // Reads the input from the serial port
+    sensor.setConversionMode(tempOffset);
+
   }
   else
   {

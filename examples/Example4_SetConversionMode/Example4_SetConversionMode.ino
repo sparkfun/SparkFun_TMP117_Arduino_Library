@@ -33,6 +33,7 @@
   linked on Page 35 of the TMP117's datasheet
 */
 
+
 #include <Wire.h> // Used to establish serial communication on the I2C bus
 #include <SparkFun_TMP117.h> // Used to send and recieve specific information from our sensor
 
@@ -43,12 +44,13 @@
 // SCL = 0x4B
 TMP117 sensor; // Initalize sensor
 
+/* Change the Serial Monitor to have "No Line Ending" for the sketch to work properly */
 
 void setup()
 {
   Wire.begin();
   Serial.begin(115200); // Start serial communication at 115200 baud
-  Wire.setClock(400000); // Set clock speed to be the fastest for better communication (fast mode)
+  // Wire.setClock(400000); // Set clock speed to be the fastest for better communication (fast mode)
   Serial.println("TMP117 Example 4: Set Conversion Mode");
   Serial.println(); // Create a whitespace for easier readings
 }
@@ -61,8 +63,6 @@ void setup()
   One-Shot Conversion (OS) = 0b11 = 3
 */
 
-char mode = "";
-
 void loop()
 {
   if (sensor.begin() == true)
@@ -71,13 +71,13 @@ void loop()
     Serial.println(sensor.getConversionMode());
     Serial.println("Enter your mode of Conversion (number 0 - 3): ");
     while (Serial.available() == 0); // Waits for the user input
-    mode = Serial.read(); // Reads the input string from serial port
+    byte mode = Serial.read(); // Reads the input from the serial port
     Serial.print("Number recieved: ");
     Serial.println(mode);
     delay(500);
-    if (mode == '0' | mode == '1' | mode == '2' | mode == '3')
+    if (mode == '0' || mode == '1' || mode == '2' || mode == '3')
     {
-      sensor.setConversionMode(mode);
+      sensor.setConversionMode((uint8_t)mode);
       Serial.println();
       delay(500);
     }
@@ -87,7 +87,7 @@ void loop()
     }
     delay(1000);
   }
-  
+
   else // Runs when the device was unable to setup properly
   {
     Serial.println("Device failed to setup");
