@@ -51,6 +51,7 @@
 #include <SparkFun_TMP117.h> // Used to send and recieve specific information from our sensor
 
 TMP117 sensor; // Initalize sensor object
+uint8_t mode = 0; // The conversion mode to be used (the sensor is set to 0 by default)
 
 void setup()
 {
@@ -61,24 +62,25 @@ void setup()
 
   //make sure the sensor is set up properly
   if(sensor.begin()) {
-    Serial.println("Device found. I2C connections are good.")
+    Serial.println("Device found. I2C connections are good.");
   }
   
   else {
-    Serial.println("Device not found. Check your connections and reset.")
+    Serial.println("Device not found. Check your connections and reset.");
     while(1); //hang forever
   }
 }
 
 void loop()
 {
-  Serial.println("Current Conversion Mode: %d", sensor.getConversionMode());
+  Serial.print("Current Conversion Mode: ");
+  Serial.println(sensor.getConversionMode());
   Serial.println("Enter your mode of Conversion (number 0 - 3): ");
 
   if(Serial.available()){
     uint8_t input = Serial.read();
     if(isdigit(input) && input <= 3){
-      mode = input - "0";
+      mode = input - '0';
     }
 
     //update the conversion mode on the TMP117
@@ -86,7 +88,8 @@ void loop()
   }
 
   if(sensor.dataReady()){
-    println("Temp (C): %f", sensor.readTempC());
+    Serial.print("Temp (C): ");
+    Serial.println(sensor.readTempC());
   }
 }
 
