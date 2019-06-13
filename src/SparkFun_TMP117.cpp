@@ -265,7 +265,7 @@ void TMP117::softReset()
 /* SET CONVERSION MODE
 	This function writes the mode for the conversions.
 	This can be found in the datasheet on Page 25 Table 6.
-	Currently set in Continuous Conversion Mode.
+	The TMP117 defaults to Continuous Conversion Mode on reset.
 */
 void TMP117::setConversionMode(uint8_t cycle)
 {
