@@ -69,26 +69,34 @@ void setup()
     Serial.println("Device not found. Check your connections and reset.");
     while(1); //hang forever
   }
-}
 
-void loop()
-{
   Serial.print("Current Conversion Mode: ");
   Serial.println(sensor.getConversionMode());
   Serial.println("Enter your mode of Conversion (number 0 - 3): ");
 
+}
+
+void loop()
+{
   if(Serial.available()){
     uint8_t input = Serial.read();
-    if(isdigit(input) && input <= 3){
-      mode = input - '0';
-    }
 
-    //update the conversion mode on the TMP117
-    sensor.setConversionMode(mode);    
+    if(isdigit(input) && (input <= '3')){
+      mode = input - '0';
+
+      Serial.print("Updated Conversion Mode Received: ");
+      Serial.println(mode);
+
+      //update the conversion mode on the TMP117
+      sensor.setConversionMode(mode);
+    }  
   }
 
   if(sensor.dataReady()){
-    Serial.print("Temp (C): ");
+    Serial.print("Current Conversion Mode: ");
+    Serial.print(sensor.getConversionMode());
+    
+    Serial.print(" Temp (C): ");
     Serial.println(sensor.readTempC());
   }
 }
