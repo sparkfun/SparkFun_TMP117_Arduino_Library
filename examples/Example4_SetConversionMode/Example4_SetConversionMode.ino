@@ -50,9 +50,24 @@ void setup()
 {
   Wire.begin();
   Serial.begin(115200); // Start serial communication at 115200 baud
+<<<<<<< Updated upstream
   // Wire.setClock(400000); // Set clock speed to be the fastest for better communication (fast mode)
   Serial.println("TMP117 Example 4: Set Conversion Mode");
   Serial.println(); // Create a whitespace for easier readings
+=======
+  //does the I2C clock need to be initialized here??
+  Serial.println("TMP117 Example 4: Set Conversion Mode \r\n");
+
+  //make sure the sensor is set up properly
+  if(sensor.begin()) {
+    Serial.println("Device found. I2C connections are good.");
+  }
+  
+  else {
+    Serial.println("Device not found. Check your connections and reset.");
+    while(1); //hang forever
+  }
+>>>>>>> Stashed changes
 }
 
 
