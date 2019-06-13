@@ -57,11 +57,11 @@ void setup()
 {
   Wire.begin();
   Serial.begin(115200); // Start serial communication at 115200 baud
-  //does the I2C clock need to be initialized here??
+  Wire.setClock(400000); // Set I2C bus to 400kHz
   Serial.println("TMP117 Example 4: Set Conversion Mode \r\n");
 
   //make sure the sensor is set up properly
-  if(sensor.begin()) {
+  if(sensor.isAlive()) {
     Serial.println("Device found. I2C connections are good.");
   }
   

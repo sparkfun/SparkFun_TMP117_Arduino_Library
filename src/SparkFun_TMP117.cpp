@@ -41,9 +41,10 @@ Distributed as-is; no warranty is given.
     the variable address into a private variable for future use. 
     The initial variable address should be 0x48. 
 */
-TMP117::TMP117(byte address)
+TMP117::TMP117(TwoWire &wirePort, uint8_t addr)
 {
-	_address = address;
+	_deviceAddress = addr;
+	_i2cPort = &wirePort; //use the main I2C port on the Arduino by default, but this is configurable with the setBus function
 	alert_type = NOALERT;
 }
 
@@ -53,7 +54,7 @@ TMP117::TMP117(byte address)
 */
 uint8_t TMP117::getAddress()
 {
-	return TMP117_I2C_ADDR;
+	return _deviceAddress;
 }
 
 /* SET ADDRESS
@@ -64,68 +65,45 @@ uint8_t TMP117::getAddress()
 */
 void TMP117::setAddress(uint8_t addr)
 {
-	addr = TMP117_I2C_ADDR;
+	_deviceAddress = addr;
 }
 
-/* BEGIN INITIALIZATION
-    This function initalizes the TMP117 sensor and opens up the registers.
-	This returns true when it was successfully set up and false otherwise.
-*/
-bool TMP117::begin(TwoWire &wirePort, uint8_t deviceAddress)
-{
-	// Set device address and wire port to private variable
-	_address = deviceAddress;
-	_i2cPort = &wirePort;
-	byte rawData[2]; // Array created for values needed to be returned in for shifting
-	int16_t digitalTempC = 0;
-	if (isConnected() == false) // Returns false when not able to be connected
-	{
-		return false;
-	}
 
-	readRegisters(TMP117_DEVICE_ID, rawData, 2); // Calls to read registers to pull all the bits to store in an array
-	int16_t deviceID = 0;						 // send to other function to get actual device id value
+/* IS ALIVE
+    This function checks if the TMP will ACK over I2C, and
+	if the TMP will correctly self-identify with the proper
+	device ID. Returns true if both checks pass.
+*/
+bool TMP117::isAlive()
+{
+	//make sure the TMP will acknowledge over I2C
+	_i2cPort->beginTransmission(_deviceAddress);
+	if (_i2cPort->endTransmission() != 0) {return false;}
+
+	//read the deviceID from the TMP
+	byte rawData[2];
+	readRegisters(TMP117_DEVICE_ID, rawData, 2); // reads registers into rawData
 	byte MSB = rawData[0];
 	byte LSB = rawData[1];
-	deviceID = (MSB << 8) | (LSB & 0xFF); // Must be signed
+	int16_t deviceID = (MSB << 8) | (LSB & 0xFF); //convert MSB+LSB to 16-bit deviceID
 
-	// DEVICE_ID should always be 0x0117
-	// Checks to see if properly connected
-	if (deviceID != DEVICE_ID_VALUE)
-	{
-		return false;
-	}
+	//make sure the device ID reported by the TMP is correct
+	//should always be 0x0117
+	if (deviceID != DEVICE_ID_VALUE) {return false;}
 
-	return true; // Returns true when all the checks are passed
+	return true; //returns true if all the checks pass
 }
 
-/* IS CONNECTED
-	This function returns true if the I2C Device acknowledges a connection.
-    Otherwise returns false.
-*/
-bool TMP117::isConnected()
-{
-	_i2cPort->beginTransmission((uint8_t)_address);
-	if (_i2cPort->endTransmission() == 0)
-	{
-		return (true);
-	}
-	else
-	{
-		Serial.println("Device unable to connect.");
-		return (false);
-	}
-}
 
 /* READ REGISTER
 	This function reads the register bytes from the sensor when called upon.
 */
 uint16_t TMP117::readRegister(TMP117_Register reg)
 {
-	_i2cPort->beginTransmission((uint8_t)_address);
+	_i2cPort->beginTransmission((uint8_t)_deviceAddress);
 	_i2cPort->write(reg);
 	_i2cPort->endTransmission(false);			 // endTransmission but keep the connection active
-	_i2cPort->requestFrom(_address, (uint8_t)2); // Ask for 2 bytes, once done, bus is released by default
+	_i2cPort->requestFrom(_deviceAddress, (uint8_t)2); // Ask for 2 bytes, once done, bus is released by default
 
 	// Wait for the data to come back
 	if (_i2cPort->available())
@@ -146,10 +124,10 @@ uint16_t TMP117::readRegister(TMP117_Register reg)
 */
 void TMP117::readRegisters(TMP117_Register reg, byte *buffer, byte len)
 {
-	_i2cPort->beginTransmission(_address);
+	_i2cPort->beginTransmission(_deviceAddress);
 	_i2cPort->write(reg);
 	_i2cPort->endTransmission(false);	 // endTransmission but keep the connection active
-	_i2cPort->requestFrom(_address, len); // Ask for bytes, once done, bus is released by default
+	_i2cPort->requestFrom(_deviceAddress, len); // Ask for bytes, once done, bus is released by default
 
 	// Wait for data to come back
 	if (_i2cPort->available() == len)
@@ -166,7 +144,7 @@ void TMP117::readRegisters(TMP117_Register reg, byte *buffer, byte len)
 */
 void TMP117::writeRegisters(TMP117_Register reg, byte *buffer, byte len)
 {
-	_i2cPort->beginTransmission((uint8_t)_address);
+	_i2cPort->beginTransmission((uint8_t)_deviceAddress);
 	_i2cPort->write(reg);
 	for (int i = 0; i < len; i++) // Loop to run through all the bits requested
 		_i2cPort->write(buffer[i]);
@@ -192,11 +170,10 @@ void TMP117::writeRegister(TMP117_Register reg, byte data)
 float TMP117::readTempC()
 {
 	byte rawData[2] = {0}; // Sets the array of rawData equal to 0 initially
-	int16_t digitalTempC = 0;
 	readRegisters(TMP117_TEMP_RESULT, rawData, 2); // Calls to read registers to pull all the bits to store in an array
 	byte MSB = rawData[0];
 	byte LSB = rawData[1];
-	digitalTempC = (MSB << 8) | (LSB & 0xFF);			 // Must be unsigned
+	int16_t digitalTempC = (MSB << 8) | (LSB & 0xFF);	// Must be unsigned
 	float finalTempC = digitalTempC * TMP117_RESOLUTION; // Multiplies by the resolution for digital to final temp
 
 	return finalTempC;

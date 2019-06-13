@@ -5,7 +5,7 @@ Madison Chodikov @ SparkFun Electronics
 Original Creation Date: April 29, 2016
 https://github.com/sparkfunX/Qwiic_TMP117
 
-This file prototypes the TMP102 class, implemented in SparkFunTMP117.cpp.
+This file prototypes the TMP117 class, implemented in SparkFunTMP117.cpp.
 
 Development environment specifics:
 	IDE: Arduino 1.8.9
@@ -25,13 +25,9 @@ Distributed as-is; no warranty is given.
 #include <Arduino.h>
 #include "SparkFun_TMP117_Registers.h"
 
-#define TMP117_I2C_ADDR 0x48 // Address found on Page 19 of data sheet (GND)
-
-// Address found on page 23 Table 3 of the data sheet
-#define DEVICE_ID_VALUE 0x0117
-
-// Resolution of the device, found on page 1 of the data sheet
-#define TMP117_RESOLUTION (double)0.0078125
+#define DEFAULT_DEVICE_ADDR 0x48
+#define DEVICE_ID_VALUE 0x0117 // Value found in the device ID register on reset (page 24 Table 3 of datasheet)
+#define TMP117_RESOLUTION 0.0078125f // Resolution of the device, found on (page 1 of datasheet)
 
 enum TMP117_ALERT
 {
@@ -74,14 +70,11 @@ typedef union {
 class TMP117
 {
 public:
-	// Constructor
-	TMP117(byte address = TMP117_I2C_ADDR);
+	TMP117(TwoWire &wirePort = Wire, uint8_t addr = DEFAULT_DEVICE_ADDR); 		   // Constructor
 
-	bool begin(TwoWire &wirePort = Wire, uint8_t deviceAddress = TMP117_I2C_ADDR); //Initialize the TMP117 sensor at given address
+	bool isAlive(); 									   						   // Checks for ACK over I2C, and checks the device ID of the TMP
 	uint8_t getAddress();														   // Lets the user see the current address of the device
 	void setAddress(uint8_t addr);												   // Lets the user set the address of the device
-	bool begin_(uint8_t address, TwoWire &wirePort);							   // Initalizes sensor and opens registers
-	bool isConnected();															   // Checks connection
 	float readTempC();															   // Returns the temperature in degrees C
 	float readTempF();															   // Converts readTempC result to degrees F
 	float temperatureOffset();													   // Reads the offset temperature value from the register
@@ -105,7 +98,7 @@ public:
 
 private:
 	TwoWire *_i2cPort = NULL; //The generic connection to user's chosen I2C hardware
-	uint8_t _address;		  // Address of Temperature sensor
+	uint8_t _deviceAddress;		  // Address of Temperature sensor
 
 	TMP117_ALERT alert_type;
 
