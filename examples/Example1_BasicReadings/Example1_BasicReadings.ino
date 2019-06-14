@@ -33,7 +33,7 @@
   linked on Page 35 of the TMP117's datasheet
 */
 
-#include <Wire.h> // Used to establish serial communication on the I2C bus
+#include <Wire.h>            // Used to establish serial communication on the I2C bus
 #include <SparkFun_TMP117.h> // Used to send and recieve specific information from our sensor
 
 // The default address of the device is 0x48 = 72 (GND)
@@ -43,38 +43,36 @@
 // SCL = 0x4B = 75
 TMP117 sensor; // Initalize sensor
 
-
 void setup()
 {
   Wire.begin();
-  Serial.begin(115200); // Start serial communication at 115200 baud
-  Wire.setClock(400000); // Set clock speed to be the fastest for better communication (fast mode)
-  sensor.setAddress(0x48);
+  Serial.begin(115200);    // Start serial communication at 115200 baud
+  Wire.setClock(400000);   // Set clock speed to be the fastest for better communication (fast mode)
+  sensor.setAddress(0x48); // Set the address of the device - see above address comments
 
   Serial.println("TMP117 Example 1: Basic Readings");
-  if (sensor.begin() == true)
+  if (sensor.isAlive() == true)
   {
     Serial.println("Begin");
   }
   else
   {
     Serial.println("Device failed to setup.");
-    while (1);
+    while (1)
+      ;
   }
-// Code commented out below for debugging purposes, delete once this sketch is finalized
-//  uint16_t deviceID = sensor.readRegister(TMP117_DEVICE_ID);
-//
-//  Serial.print("deviceID: 0x");
-//  Serial.println(deviceID, HEX);
-//
-//  Serial.print("deviceID: 0b");
-//  Serial.println(deviceID, BIN);
-//
-//    while(1);
+  // Code commented out below for debugging purposes, delete once this sketch is finalized
+  //  uint16_t deviceID = sensor.readRegister(TMP117_DEVICE_ID);
+  //
+  //  Serial.print("deviceID: 0x");
+  //  Serial.println(deviceID, HEX);
+  //
+  //  Serial.print("deviceID: 0b");
+  //  Serial.println(deviceID, BIN);
+  //
+  //    while(1);
   
-  sensor.isConnected();
 }
-
 
 void loop()
 {
@@ -94,5 +92,4 @@ void loop()
   {
     delay(500);
   }
-  
 }

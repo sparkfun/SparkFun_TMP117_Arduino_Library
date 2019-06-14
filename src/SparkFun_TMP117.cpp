@@ -68,7 +68,6 @@ void TMP117::setAddress(uint8_t addr)
 	_deviceAddress = addr;
 }
 
-
 /* IS ALIVE
     This function checks if the TMP will ACK over I2C, and
 	if the TMP will correctly self-identify with the proper
@@ -78,7 +77,10 @@ bool TMP117::isAlive()
 {
 	//make sure the TMP will acknowledge over I2C
 	_i2cPort->beginTransmission(_deviceAddress);
-	if (_i2cPort->endTransmission() != 0) {return false;}
+	if (_i2cPort->endTransmission() != 0)
+	{
+		return false;
+	}
 
 	//read the deviceID from the TMP
 	byte rawData[2];
@@ -89,20 +91,23 @@ bool TMP117::isAlive()
 
 	//make sure the device ID reported by the TMP is correct
 	//should always be 0x0117
-	if (deviceID != DEVICE_ID_VALUE) {return false;}
+	if (deviceID != DEVICE_ID_VALUE)
+	{
+		return false;
+	}
 
 	return true; //returns true if all the checks pass
 }
 
-
 /* READ REGISTER
 	This function reads the register bytes from the sensor when called upon.
+	This reads 2 bytes of information from the 16-bit registers. 
 */
 uint16_t TMP117::readRegister(TMP117_Register reg)
 {
 	_i2cPort->beginTransmission((uint8_t)_deviceAddress);
 	_i2cPort->write(reg);
-	_i2cPort->endTransmission(false);			 // endTransmission but keep the connection active
+	_i2cPort->endTransmission(false);				   // endTransmission but keep the connection active
 	_i2cPort->requestFrom(_deviceAddress, (uint8_t)2); // Ask for 2 bytes, once done, bus is released by default
 
 	// Wait for the data to come back
@@ -126,7 +131,7 @@ void TMP117::readRegisters(TMP117_Register reg, byte *buffer, byte len)
 {
 	_i2cPort->beginTransmission(_deviceAddress);
 	_i2cPort->write(reg);
-	_i2cPort->endTransmission(false);	 // endTransmission but keep the connection active
+	_i2cPort->endTransmission(false);			// endTransmission but keep the connection active
 	_i2cPort->requestFrom(_deviceAddress, len); // Ask for bytes, once done, bus is released by default
 
 	// Wait for data to come back
@@ -169,7 +174,7 @@ void TMP117::writeRegister(TMP117_Register reg, byte data)
 */
 float TMP117::readTempC()
 {
-	byte rawData[2] = {0}; // Sets the array of rawData equal to 0 initially
+	byte rawData[2] = {0};						   // Sets the array of rawData equal to 0 initially
 	readRegisters(TMP117_TEMP_RESULT, rawData, 2); // Calls to read registers to pull all the bits to store in an array
 	byte MSB = rawData[0];
 	byte LSB = rawData[1];
@@ -191,7 +196,8 @@ float TMP117::readTempF()
 
 /* GET TEMPERATURE OFFSET
 	This function reads the temperature offset. This reads from the register
-	value 0x07 (TMP117_TEMP_OFFSET)
+	value 0x07 (TMP117_TEMP_OFFSET). This can be found on page 23 of the 
+	datasheet. 
 */
 float TMP117::getTemperatureOffset() // Reads the temperature offset
 {
@@ -310,34 +316,6 @@ void TMP117::setConversionCycleTime(uint8_t cycle)
 	// They can also be found in Table 7 on Page 26 of the datasheet
 }
 
-/* UNSIGNED WRITE REGISTER 16
-	This function is used for converting all the values that have
-	been read in 8 bit format to a 16 bit value.
-	The functions getTemperatureOffset(), readTempC() call this.
-*/
-// uint16_t TMP117::unsignedWriteRegister16(byte rawData[2])
-// {
-// 	byte rawData[2];
-// 	byte MSB = rawData[0];
-// 	byte LSB = rawData[1];
-// 	uint16_t unsignedValue = (MSB << 8) | (LSB & 0xFF); // Must be unsigned
-// 	return unsignedValue;
-// }
-
-/* SIGNED WRITE REGISTER 16
-	This function is used for converting all the values that have
-	been read in 8 bit format to a 16 bit value.
-	The function begin() calls this.
-*/
-// int16_t TMP117::signedWriteRegister16(byte rawData[2])
-// {
-// 	byte rawData[2];
-// 	byte MSB = rawData[0];
-// 	byte LSB = rawData[1];
-// 	int16_t signedValue = (MSB << 8) | (LSB & 0xFF); // Must be signed
-// 	return signedValue;
-// }
-
 /* DATA READY
 	This function checks to see if there is data ready to be sent
 	from the TMP117. This can be found in Page 25 Table 6 of the 
@@ -347,6 +325,7 @@ bool TMP117::dataReady()
 {
 	uint16_t response = readRegister(TMP117_CONFIGURATION);
 
+	// If statement to see if the 13th bit of the register is 1 or not
 	if (response & 1 << 13)
 	{
 		return true;

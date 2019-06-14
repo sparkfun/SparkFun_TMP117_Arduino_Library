@@ -47,9 +47,21 @@ TMP117 sensor; // Initalize sensor
 void setup()
 {
   Wire.begin();
-  Serial.begin(115200); // Start serial communication at 115200 baud
-  Wire.setClock(400000); // Set clock speed to be the fastest for better communication (fast mode)
-  Serial.println("TMP117 Example 3: Set Offset Temperature Value");
+  Serial.begin(115200);    // Start serial communication at 115200 baud
+  Wire.setClock(400000);   // Set clock speed to be the fastest for better communication (fast mode)
+  sensor.setAddress(0x48); // Set the address of the device - see above address comments
+
+  Serial.println("TMP117 Example 3: Set Temperature Offset Value");
+  if (sensor.isAlive() == true)
+  {
+    Serial.println("Begin");
+  }
+  else
+  {
+    Serial.println("Device failed to setup.");
+    while (1)
+      ;
+  }
 }
 
 
