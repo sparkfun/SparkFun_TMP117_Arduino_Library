@@ -61,17 +61,6 @@ void setup()
     while (1)
       ;
   }
-  // Code commented out below for debugging purposes, delete once this sketch is finalized
-  //  uint16_t deviceID = sensor.readRegister(TMP117_DEVICE_ID);
-  //
-  //  Serial.print("deviceID: 0x");
-  //  Serial.println(deviceID, HEX);
-  //
-  //  Serial.print("deviceID: 0b");
-  //  Serial.println(deviceID, BIN);
-  //
-  //    while(1);
-  
 }
 
 void loop()

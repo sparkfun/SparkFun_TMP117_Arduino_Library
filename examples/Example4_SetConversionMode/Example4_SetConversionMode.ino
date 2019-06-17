@@ -5,8 +5,9 @@
   May 29 2019
   ~
 
-  This sketch configures the TMP117 temperature sensor and prints the
-  temperature.
+  This sketch can get and set the conversion mode that the temperature sensor can be in,
+  which is Continuous Conversion, Shutdown, or One-Shot. The specific values for these
+  are found below at the end of the comments section
 
   Resources:
   Wire.h (included with Arduino IDE)
@@ -56,48 +57,43 @@ uint8_t mode = 0; // The conversion mode to be used (the sensor is set to 0 by d
 void setup()
 {
   Wire.begin();
-  Serial.begin(115200); // Start serial communication at 115200 baud
-  Wire.setClock(400000); // Set I2C bus to 400kHz
-  Serial.println("TMP117 Example 4: Set Conversion Mode \r\n");
+  Serial.begin(115200);    // Start serial communication at 115200 baud
+  Wire.setClock(400000);   // Set clock speed to be the fastest for better communication (fast mode)
+  sensor.setAddress(0x48); // Set the address of the device - see above address comments
 
-  //make sure the sensor is set up properly
-  if(sensor.isAlive()) {
-    Serial.println("Device found. I2C connections are good.");
+  Serial.println("TMP117 Example 5: Setting High and Low Temperature Limits");
+  if (sensor.isAlive() == true) // Function to check if the sensor will correctly self-identify with the proper Device ID/Address
+  {
+    Serial.println("Begin");
   }
-  
-  else {
-    Serial.println("Device not found. Check your connections and reset.");
-    while(1); //hang forever
+  else
+  {
+    Serial.println("Device failed to setup.");
+    while (1); // Runs forever if the sensor does not initialize correctly
   }
-
   Serial.print("Current Conversion Mode: ");
   Serial.println(sensor.getConversionMode());
-  Serial.println("Enter your mode of Conversion (number 0 - 3): ");
-
 }
 
+// For function to work, make sure the Serial Monitor is set to "No Line Ending"
 void loop()
 {
-  if(Serial.available()){
-    uint8_t input = Serial.read();
-
-    if(isdigit(input) && (input <= '3')){
-      mode = input - '0';
-
-      Serial.print("Updated Conversion Mode Received: ");
-      Serial.println(mode);
-
-      //update the conversion mode on the TMP117
-      sensor.setConversionMode(mode);
-    }  
+  Serial.println("Enter your mode of Conversion (number 0 - 3): ");
+  while (Serial.available() == 0); // Waits for the user input
+  byte correctMode = Serial.parseInt(); // Reads the input from the serial port
+  Serial.print("Number recieved: ");
+  Serial.println(correctMode);
+  delay(500);
+  if (correctMode == 0 || correctMode == 1 || correctMode == 2 || correctMode == 3)
+  {
+    sensor.setConversionMode((uint8_t)mode);
+    Serial.println(); // Create a whitespace for easier readings
+    // delay(500);
   }
-
-  if(sensor.dataReady()){
-    Serial.print("Current Conversion Mode: ");
-    Serial.print(sensor.getConversionMode());
-    
-    Serial.print(" Temp (C): ");
-    Serial.println(sensor.readTempC());
+  else
+  {
+    Serial.println("Conversion mode unsuccessfully set - Please enter a number 0 - 3");
+    Serial.println(); // Create a whitespace for easier readings
   }
+  delay(1000);
 }
-

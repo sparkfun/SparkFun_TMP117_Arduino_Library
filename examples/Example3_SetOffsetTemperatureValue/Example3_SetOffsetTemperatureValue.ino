@@ -49,7 +49,7 @@ void setup()
   Wire.begin();
   Serial.begin(115200);    // Start serial communication at 115200 baud
   Wire.setClock(400000);   // Set clock speed to be the fastest for better communication (fast mode)
-  sensor.setAddress(0x48); // Set the address of the device - see above address comments
+  sensor.setAddress(0x48); // Set the address of the device - see above address comments for other addresses
 
   Serial.println("TMP117 Example 3: Set Temperature Offset Value");
   if (sensor.isAlive() == true)
@@ -59,28 +59,27 @@ void setup()
   else
   {
     Serial.println("Device failed to setup.");
-    while (1)
-      ;
+    while (1);
   }
+
+  Serial.println(); // Create a new line for the loop for easier readings
+  Serial.print("Current Temperature Offset (in °C): ");
+  Serial.println(sensor.getTemperatureOffset());
 }
 
 
-float tempOffset = 0;
-
+// For function to work, make sure the Serial Monitor is set to "No Line Ending"
 void loop()
 {
-  if (sensor.begin() == true)
-  {
-    Serial.print("Current temperature offset (in °C): ");
-    Serial.println(sensor.getTemperatureOffset());
-    Serial.print("Enter new temperature offset (in °C): ");
-    while (Serial.available() == 0); // Waits for the user input
-    tempOffset = Serial.read(); // Reads the input from the serial port
-    sensor.setConversionMode(tempOffset);
-
-  }
-  else
-  {
-    Serial.println("Device failed to setup");
-  }
+  float tempOffset = 0;
+  Serial.print("Enter new temperature offset (in °C): ");
+  while (Serial.available() == 0); // Waits for the user input
+  tempOffset = Serial.parseInt() + 1; // Reads the input from the serial port, adds 1 for precision
+  sensor.setTemperatureOffset(tempOffset);
+  delay(1000); // Delay for conversion to successfully work
+  Serial.println(); // Create a new line after each run of the loop
+  Serial.print("New Offset Temperature (in °C): ");
+  Serial.println(sensor.getTemperatureOffset());
+  Serial.print("Current Offset Temperature (in °C): ");
+  Serial.println(sensor.readTempC());
 }

@@ -82,12 +82,7 @@ bool TMP117::isAlive()
 		return false;
 	}
 
-	//read the deviceID from the TMP
-	byte rawData[2];
-	readRegisters(TMP117_DEVICE_ID, rawData, 2); // reads registers into rawData
-	byte MSB = rawData[0];
-	byte LSB = rawData[1];
-	int16_t deviceID = (MSB << 8) | (LSB & 0xFF); //convert MSB+LSB to 16-bit deviceID
+	uint16_t deviceID = readRegister(TMP117_DEVICE_ID); // reads registers into rawData
 
 	//make sure the device ID reported by the TMP is correct
 	//should always be 0x0117
@@ -123,45 +118,16 @@ uint16_t TMP117::readRegister(TMP117_Register reg)
 	}
 }
 
-/* READ MULTIPLE REGISTERS
-    Read "en" bytes from the TMP117, starting at register "reg." Bytes are 
-    stored in "buffer" on exit.
+/* WRITE REGISTER
+    Wire data to a TMP117 register
 */
-void TMP117::readRegisters(TMP117_Register reg, byte *buffer, byte len)
-{
-	_i2cPort->beginTransmission(_deviceAddress);
-	_i2cPort->write(reg);
-	_i2cPort->endTransmission(false);			// endTransmission but keep the connection active
-	_i2cPort->requestFrom(_deviceAddress, len); // Ask for bytes, once done, bus is released by default
-
-	// Wait for data to come back
-	if (_i2cPort->available() == len)
-	{
-		// Iterate through data from buffer
-		for (uint8_t i = 0; i < len; i++)
-			buffer[i] = _i2cPort->read();
-	}
-}
-
-/* WRITE TO MULTIPLE REGISTERS
-	Write an array of "len" bytes ("buffer"), starting at register "reg,"
-    and auto-incrementing to the next.
-*/
-void TMP117::writeRegisters(TMP117_Register reg, byte *buffer, byte len)
+void TMP117::writeRegister(TMP117_Register reg, uint16_t data)
 {
 	_i2cPort->beginTransmission((uint8_t)_deviceAddress);
 	_i2cPort->write(reg);
-	for (int i = 0; i < len; i++) // Loop to run through all the bits requested
-		_i2cPort->write(buffer[i]);
+	_i2cPort->write(lowByte(data));
+	_i2cPort->write(highByte(data));
 	_i2cPort->endTransmission(); // Stop transmitting
-}
-
-/* WRITE TO A SINGLE REGISTER
-    Wire a single bit of data to a register in TMP117.
-*/
-void TMP117::writeRegister(TMP117_Register reg, byte data)
-{
-	writeRegisters(reg, &data, 1); // Only calls to write to one byte in the register
 }
 
 /* READ TEMPERATURE CELSIUS
@@ -174,11 +140,8 @@ void TMP117::writeRegister(TMP117_Register reg, byte data)
 */
 float TMP117::readTempC()
 {
-	byte rawData[2] = {0};						   // Sets the array of rawData equal to 0 initially
-	readRegisters(TMP117_TEMP_RESULT, rawData, 2); // Calls to read registers to pull all the bits to store in an array
-	byte MSB = rawData[0];
-	byte LSB = rawData[1];
-	int16_t digitalTempC = (MSB << 8) | (LSB & 0xFF);	// Must be unsigned
+	int16_t digitalTempC = readRegister(TMP117_TEMP_RESULT); // Calls to read registers to pull all the bits to store in an array
+
 	float finalTempC = digitalTempC * TMP117_RESOLUTION; // Multiplies by the resolution for digital to final temp
 
 	return finalTempC;
@@ -191,7 +154,7 @@ float TMP117::readTempC()
 */
 float TMP117::readTempF()
 {
-	return readTempC() * 9.0 / 5.0 + 32.0;
+	return readTempC() * 9.0 / 5.0 + 32.0; // Conversion from °C to °F
 }
 
 /* GET TEMPERATURE OFFSET
@@ -201,12 +164,8 @@ float TMP117::readTempF()
 */
 float TMP117::getTemperatureOffset() // Reads the temperature offset
 {
-	byte rawData[2];
-	readRegisters(TMP117_TEMP_OFFSET, rawData, 2); // Calls to read registers to pull all the bits to store in an array
-	byte MSB = rawData[0];
-	byte LSB = rawData[1];
-	uint16_t unsignedValue = (MSB << 8) | (LSB & 0xFF); // Must be unsigned
-	int16_t finalOffset = unsignedValue * TMP117_RESOLUTION;
+	int16_t offset = readRegister(TMP117_TEMP_OFFSET); // Calls to read registers to pull all the bits to store in an array
+	float finalOffset = (float)offset * TMP117_RESOLUTION;
 	return finalOffset;
 }
 
@@ -217,18 +176,54 @@ float TMP117::getTemperatureOffset() // Reads the temperature offset
 */
 void TMP117::setTemperatureOffset(uint16_t offset)
 {
-	CONFIGURATION_REG reg;
-	reg.CONFIGURATION_COMBINED = offset;
-	writeRegister(TMP117_CONFIGURATION, reg.CONFIGURATION_COMBINED);
+	float resolutionOffset = offset / 2; // Divide by 2 write the correct value to the register
+	writeRegister(TMP117_TEMP_OFFSET, resolutionOffset);
 }
 
-/* GET ALERT
-	This function returns the type of the alert being caused.
-	Alerts are NOALERT, HIGHALERT, and LOWALERT.
+/* GET LOW LIMIT
+	This function reads the low limit register that is set by the user.
+	The values are signed integers since they can be negative.
 */
-TMP117_ALERT TMP117::getAlert()
+float TMP117::getLowLimit()
 {
-	return alert_type;
+	int16_t lowLimit = readRegister(TMP117_T_LOW_LIMIT); // Calls to read register to pull all the bits to store in a variable
+	float finalLimit = (float)lowLimit * TMP117_RESOLUTION;
+	return finalLimit;
+}
+
+/* SET LOW LIMIT
+	This function allows the user to set the low limit register to whatever
+	specified value, as long as in the range for the temperature sensor. This
+	function can be used as a threshold for Therm mode and or Alert mode.
+	The values are signed integers since they can be negative.
+*/
+void TMP117::setLowLimit(float lowLimit)
+{
+	float finalLimit = lowLimit / 2;			   // Divide by 2 write the correct value to the register
+	writeRegister(TMP117_T_LOW_LIMIT, finalLimit); // Write to the register to change the value
+}
+
+/* GET HIGH LIMIT
+	This function reads the high limit register that is set by the user.
+	The values are signed integers since they can be negative.
+*/
+float TMP117::getHighLimit()
+{
+	int16_t limit = readRegister(TMP117_T_HIGH_LIMIT); // Calls to read registers to pull all the bits to store in an array
+	float finalLimit = (float)limit * TMP117_RESOLUTION;
+	return finalLimit;
+}
+
+/* SET HIGH LIMIT
+	This function allows the user to set the high limit register to whatever
+	specified value, as long as in the range for the temperature sensor. This
+	function can be used as a threshold for Therm mode and or Alert mode
+	The values are signed integers since they can be negative.
+*/
+void TMP117::setHighLimit(float highLimit)
+{
+	float finalLimit = highLimit / 2;				// Divide by 2 write the correct value to the register
+	writeRegister(TMP117_T_HIGH_LIMIT, finalLimit); // Write to the register to change the value
 }
 
 /* SOFTWARE RESET
@@ -288,15 +283,27 @@ uint8_t TMP117::getConversionMode()
 /* GET CONVERSION CYCLE TIME
 	This function gets the conversion cycle time of the device.
 	This only works in Continuous Conversion mode, which was set 
-	in the above function
+	in the above function.
 */
 uint8_t TMP117::getConversionCycleTime()
 {
-	CONFIGURATION_REG reg;
-	reg.CONFIGURATION_COMBINED = readRegister(TMP117_CONFIGURATION);
-	// reg.CONFIGURATION_FIELDS.CONV = 0b000;
-	uint8_t cycle = reg.CONFIGURATION_FIELDS.CONV;
-	return cycle;
+	uint16_t cycleTime = readRegister(TMP117_CONFIGURATION);
+	if (cycleTime & 0 << 6 && cycleTime & 0 << 5) // Checks to see if bits 5 and 6 are 00
+	{
+		return 0;
+	}
+	else if (cycleTime & 0 << 6 && cycleTime & 1 << 5) // Checks to see if bits 5 and 6 are 01
+	{
+		return 1;
+	}
+	else if (cycleTime & 1 << 6 && cycleTime & 0 << 5) // Checks to see if bits 5 and 6 are 10
+	{
+		return 2;
+	}
+	else if (cycleTime & 1 << 6 && cycleTime & 1 << 5) // Checks to see if bits 5 and 6 are 11
+	{
+		return 3;
+	}
 }
 
 /* SET CONVERSION CYCLE TIME
@@ -306,6 +313,7 @@ uint8_t TMP117::getConversionCycleTime()
 */
 void TMP117::setConversionCycleTime(uint8_t cycle)
 {
+	writeRegister(TMP117_CONFIGURATION, );
 	CONFIGURATION_REG reg;
 	reg.CONFIGURATION_COMBINED = readRegister(TMP117_CONFIGURATION);
 	reg.CONFIGURATION_FIELDS.CONV = 0b000;
@@ -334,19 +342,13 @@ bool TMP117::dataReady()
 	{
 		return false;
 	}
-
-	/* Code below not fully working yet */
-	// CONFIGURATION_REG reg;
-	// reg.CONFIGURATION_COMBINED = readRegister(TMP117_CONFIGURATION);
-	// uint8_t ready = reg.CONFIGURATION_FIELDS.DATA_READY;
-	// if (ready == 1)
-	// {
-	// 	Serial.println("Data Available");
-	// 	return true;
-	// }
-	// else
-	// {
-	// 	Serial.println("Data not available");
-	// 	return false;
-	// }
 }
+
+/* GET ALERT
+	This function returns the type of the alert being caused.
+	Alerts are NOALERT, HIGHALERT, and LOWALERT.
+*/
+// TMP117_ALERT TMP117::getAlert()
+// {
+// 	return alert_type;
+// }
