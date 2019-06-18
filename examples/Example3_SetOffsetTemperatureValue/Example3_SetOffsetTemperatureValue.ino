@@ -62,9 +62,20 @@ void setup()
     while (1);
   }
 
-  Serial.println(); // Create a new line for the loop for easier readings
-  Serial.print("Current Temperature Offset (in °C): ");
-  Serial.println(sensor.getTemperatureOffset());
+//  Serial.println(); // Create a new line for the loop for easier readings
+//  Serial.print("Current Temperature Offset (in °C): ");
+//  Serial.println(sensor.getTemperatureOffset());
+
+
+  // Code below for debugging purposes, reput in 3 lines of code above once done
+  sensor.setTemperatureOffset(2.5);
+  sensor.getTemperatureOffset();
+  Serial.println(sensor.readTempC());
+//  delay(1000);
+//  sensor.setTemperatureOffset(0);
+//  sensor.getTemperatureOffset();
+//  Serial.println(sensor.readTempC());
+  while(1);
 }
 
 
@@ -74,7 +85,8 @@ void loop()
   float tempOffset = 0;
   Serial.print("Enter new temperature offset (in °C): ");
   while (Serial.available() == 0); // Waits for the user input
-  tempOffset = Serial.parseInt() + 1; // Reads the input from the serial port, adds 1 for precision
+  tempOffset = Serial.parseInt(); // Reads the input from the serial port, adds 1 for precision
+  Serial.println(tempOffset);
   sensor.setTemperatureOffset(tempOffset);
   delay(1000); // Delay for conversion to successfully work
   Serial.println(); // Create a new line after each run of the loop

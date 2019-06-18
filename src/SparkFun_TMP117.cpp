@@ -157,6 +157,23 @@ float TMP117::readTempF()
 	return readTempC() * 9.0 / 5.0 + 32.0; // Conversion from °C to °F
 }
 
+/* Take out and or move once get temperature offset is fixed */
+void TMP117::readRegisters(TMP117_Register reg, byte *buffer, byte len)
+{
+	_i2cPort->beginTransmission(_deviceAddress);
+	_i2cPort->write(reg);
+	_i2cPort->endTransmission(false);			// endTransmission but keep the connection active
+	_i2cPort->requestFrom(_deviceAddress, len); // Ask for bytes, once done, bus is released by default
+
+	// Wait for data to come back
+	if (_i2cPort->available() == len)
+	{
+		// Iterate through data from buffer
+		for (uint8_t i = 0; i < len; i++)
+			buffer[i] = _i2cPort->read();
+	}
+}
+
 /* GET TEMPERATURE OFFSET
 	This function reads the temperature offset. This reads from the register
 	value 0x07 (TMP117_TEMP_OFFSET). This can be found on page 23 of the 
@@ -164,8 +181,16 @@ float TMP117::readTempF()
 */
 float TMP117::getTemperatureOffset() // Reads the temperature offset
 {
-	int16_t offset = readRegister(TMP117_TEMP_OFFSET); // Calls to read registers to pull all the bits to store in an array
-	float finalOffset = (float)offset * TMP117_RESOLUTION;
+	int16_t correctOffset = 0;
+	byte rawData[2];
+	readRegisters(TMP117_TEMP_OFFSET, rawData, 2); // Call to the register, store in value, request 2 bytes of information
+	byte MSB = rawData[0];
+	byte LSB = rawData[1];
+
+	correctOffset = (LSB << 8) | (MSB); // Shift the LSB over to be the MSB
+	Serial.println(correctOffset);		// Take out once function works
+	float finalOffset = (float)correctOffset * TMP117_RESOLUTION;
+	Serial.println(finalOffset);
 	return finalOffset;
 }
 
@@ -174,9 +199,10 @@ float TMP117::getTemperatureOffset() // Reads the temperature offset
 	can write to this to set any desired offset within the temperature range.
 	This writes to the register value 0x07 (TMP117_TEMP_OFFSET)
 */
-void TMP117::setTemperatureOffset(uint16_t offset)
+void TMP117::setTemperatureOffset(float offset)
 {
-	float resolutionOffset = offset / 2; // Divide by 2 write the correct value to the register
+	uint16_t resolutionOffset = offset / TMP117_RESOLUTION;
+	Serial.println(resolutionOffset); // Take out once function works
 	writeRegister(TMP117_TEMP_OFFSET, resolutionOffset);
 }
 
@@ -199,7 +225,7 @@ float TMP117::getLowLimit()
 */
 void TMP117::setLowLimit(float lowLimit)
 {
-	float finalLimit = lowLimit / 2;			   // Divide by 2 write the correct value to the register
+	float finalLimit = lowLimit;				   // Divide by 2 write the correct value to the register
 	writeRegister(TMP117_T_LOW_LIMIT, finalLimit); // Write to the register to change the value
 }
 
@@ -222,7 +248,7 @@ float TMP117::getHighLimit()
 */
 void TMP117::setHighLimit(float highLimit)
 {
-	float finalLimit = highLimit / 2;				// Divide by 2 write the correct value to the register
+	float finalLimit = highLimit;					// Divide by 2 write the correct value to the register
 	writeRegister(TMP117_T_HIGH_LIMIT, finalLimit); // Write to the register to change the value
 }
 
@@ -245,84 +271,84 @@ void TMP117::softReset()
 	This can be found in the datasheet on Page 25 Table 6.
 	The TMP117 defaults to Continuous Conversion Mode on reset.
 */
-void TMP117::setConversionMode(uint8_t cycle)
-{
-	CONFIGURATION_REG reg;
-	reg.CONFIGURATION_COMBINED = cycle;
-	if (cycle == 0)
-	{
-		writeRegister(TMP117_CONFIGURATION, 0b00);
-	}
-	else if (cycle == 1)
-	{
-		writeRegister(TMP117_CONFIGURATION, 0b01);
-	}
-	else if (cycle == 2)
-	{
-		writeRegister(TMP117_CONFIGURATION, 0b10);
-	}
-	else if (cycle == 3)
-	{
-		writeRegister(TMP117_CONFIGURATION, 0b11);
-	}
-}
+// void TMP117::setConversionMode(uint8_t cycle)
+// {
+// 	CONFIGURATION_REG reg;
+// 	reg.CONFIGURATION_COMBINED = cycle;
+// 	if (cycle == 0)
+// 	{
+// 		writeRegister(TMP117_CONFIGURATION, 0b00);
+// 	}
+// 	else if (cycle == 1)
+// 	{
+// 		writeRegister(TMP117_CONFIGURATION, 0b01);
+// 	}
+// 	else if (cycle == 2)
+// 	{
+// 		writeRegister(TMP117_CONFIGURATION, 0b10);
+// 	}
+// 	else if (cycle == 3)
+// 	{
+// 		writeRegister(TMP117_CONFIGURATION, 0b11);
+// 	}
+// }
 
 /* GET CONVERSION MODE
 	This function reads the mode for the conversions, then
 	prints it to the Serial Monitor in the Arduino IDE
 	This can be found in the datasheet on Page 25 Table 6. 
 */
-uint8_t TMP117::getConversionMode()
-{
-	CONFIGURATION_REG reg;
-	reg.CONFIGURATION_COMBINED = readRegister(TMP117_CONFIGURATION);
-	uint8_t mode = reg.CONFIGURATION_FIELDS.MOD; // Stores the information from the MOD register
-	return mode;
-}
+// uint8_t TMP117::getConversionMode()
+// {
+// 	CONFIGURATION_REG reg;
+// 	reg.CONFIGURATION_COMBINED = readRegister(TMP117_CONFIGURATION);
+// 	uint8_t mode = reg.CONFIGURATION_FIELDS.MOD; // Stores the information from the MOD register
+// 	return mode;
+// }
 
 /* GET CONVERSION CYCLE TIME
 	This function gets the conversion cycle time of the device.
 	This only works in Continuous Conversion mode, which was set 
 	in the above function.
 */
-uint8_t TMP117::getConversionCycleTime()
-{
-	uint16_t cycleTime = readRegister(TMP117_CONFIGURATION);
-	if (cycleTime & 0 << 6 && cycleTime & 0 << 5) // Checks to see if bits 5 and 6 are 00
-	{
-		return 0;
-	}
-	else if (cycleTime & 0 << 6 && cycleTime & 1 << 5) // Checks to see if bits 5 and 6 are 01
-	{
-		return 1;
-	}
-	else if (cycleTime & 1 << 6 && cycleTime & 0 << 5) // Checks to see if bits 5 and 6 are 10
-	{
-		return 2;
-	}
-	else if (cycleTime & 1 << 6 && cycleTime & 1 << 5) // Checks to see if bits 5 and 6 are 11
-	{
-		return 3;
-	}
-}
+// uint8_t TMP117::getConversionCycleTime()
+// {
+// 	uint16_t cycleTime = readRegister(TMP117_CONFIGURATION);
+// 	if (cycleTime & 0 << 6 && cycleTime & 0 << 5) // Checks to see if bits 5 and 6 are 00
+// 	{
+// 		return 0;
+// 	}
+// 	else if (cycleTime & 0 << 6 && cycleTime & 1 << 5) // Checks to see if bits 5 and 6 are 01
+// 	{
+// 		return 1;
+// 	}
+// 	else if (cycleTime & 1 << 6 && cycleTime & 0 << 5) // Checks to see if bits 5 and 6 are 10
+// 	{
+// 		return 2;
+// 	}
+// 	else if (cycleTime & 1 << 6 && cycleTime & 1 << 5) // Checks to see if bits 5 and 6 are 11
+// 	{
+// 		return 3;
+// 	}
+// }
 
 /* SET CONVERSION CYCLE TIME
 	This function sets the conversion cycle time of the device.
 	This only works in Continuous Conversion mode, which was set 
 	in an above function
 */
-void TMP117::setConversionCycleTime(uint8_t cycle)
-{
-	writeRegister(TMP117_CONFIGURATION, );
-	CONFIGURATION_REG reg;
-	reg.CONFIGURATION_COMBINED = readRegister(TMP117_CONFIGURATION);
-	reg.CONFIGURATION_FIELDS.CONV = 0b000;
-	// uint8_t cycle = reg.CONFIGURATION_FIELDS.CONV;
-	writeRegister(TMP117_CONFIGURATION, reg.CONFIGURATION_COMBINED);
+// void TMP117::setConversionCycleTime(uint8_t cycle)
+// {
+// 	writeRegister(TMP117_CONFIGURATION, );
+// 	CONFIGURATION_REG reg;
+// 	reg.CONFIGURATION_COMBINED = readRegister(TMP117_CONFIGURATION);
+// 	reg.CONFIGURATION_FIELDS.CONV = 0b000;
+// 	// uint8_t cycle = reg.CONFIGURATION_FIELDS.CONV;
+// 	writeRegister(TMP117_CONFIGURATION, reg.CONFIGURATION_COMBINED);
 
-	// There is a chart of the conversion cycle times in the SparkFun_TMP117_Registers.h file
-	// They can also be found in Table 7 on Page 26 of the datasheet
-}
+// 	// There is a chart of the conversion cycle times in the SparkFun_TMP117_Registers.h file
+// 	// They can also be found in Table 7 on Page 26 of the datasheet
+// }
 
 /* DATA READY
 	This function checks to see if there is data ready to be sent
