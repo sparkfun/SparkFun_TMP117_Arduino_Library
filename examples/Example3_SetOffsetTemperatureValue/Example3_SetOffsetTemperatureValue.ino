@@ -49,10 +49,10 @@ void setup()
   Wire.begin();
   Serial.begin(115200);    // Start serial communication at 115200 baud
   Wire.setClock(400000);   // Set clock speed to be the fastest for better communication (fast mode)
-  sensor.setAddress(0x48); // Set the address of the device - see above address comments for other addresses
+  sensor.setAddress(0x48); // Set the address of the device - see above address comments for other addresses for the device
 
   Serial.println("TMP117 Example 3: Set Temperature Offset Value");
-  if (sensor.isAlive() == true)
+  if (sensor.begin() == true)
   {
     Serial.println("Begin");
   }
@@ -62,36 +62,39 @@ void setup()
     while (1);
   }
 
-//  Serial.println(); // Create a new line for the loop for easier readings
-//  Serial.print("Current Temperature Offset (in °C): ");
-//  Serial.println(sensor.getTemperatureOffset());
-
-
-  // Code below for debugging purposes, reput in 3 lines of code above once done
-  sensor.setTemperatureOffset(2.5);
-  sensor.getTemperatureOffset();
-  Serial.println(sensor.readTempC());
-//  delay(1000);
-//  sensor.setTemperatureOffset(0);
-//  sensor.getTemperatureOffset();
-//  Serial.println(sensor.readTempC());
-  while(1);
+  Serial.println(); // Create a new line for the loop for easier readings
+  Serial.print("Current Temperature Offset (in °C): ");
+  Serial.println(sensor.getTemperatureOffset());
 }
 
 
-// For function to work, make sure the Serial Monitor is set to "No Line Ending"
+// For function to work properly, make sure the Serial Monitor is set to "No Line Ending"
+// The temperature offset function will not work if set outside the sensors bounds of +/- 256°C
 void loop()
 {
-  float tempOffset = 0;
-  Serial.print("Enter new temperature offset (in °C): ");
-  while (Serial.available() == 0); // Waits for the user input
-  tempOffset = Serial.parseInt(); // Reads the input from the serial port, adds 1 for precision
-  Serial.println(tempOffset);
-  sensor.setTemperatureOffset(tempOffset);
-  delay(1000); // Delay for conversion to successfully work
-  Serial.println(); // Create a new line after each run of the loop
-  Serial.print("New Offset Temperature (in °C): ");
-  Serial.println(sensor.getTemperatureOffset());
-  Serial.print("Current Offset Temperature (in °C): ");
-  Serial.println(sensor.readTempC());
+  if (sensor.dataReady() == true)
+  {
+    float tempOffset = 0;
+    Serial.print("Enter new temperature offset (in °C): ");
+    while (Serial.available() == 0); // Waits for the user input
+    tempOffset = Serial.parseFloat(); // Reads the input from the serial port, adds 1 for precision
+    Serial.println(tempOffset);
+    if (tempOffset > 256 || tempOffset < -256)
+    {
+      Serial.println("Please enter a number within the range of +/- 256 °C");
+      Serial.println();
+    }
+    else
+    {
+      sensor.setTemperatureOffset(tempOffset);
+      delay(1000); // Delay for conversion to successfully work
+      Serial.println(); // Create a new line after each run of the loop
+      Serial.print("New Offset Temperature: ");
+      Serial.print(sensor.getTemperatureOffset());
+      Serial.println("°C");
+      Serial.print("Temperature with Offset: ");
+      Serial.print(sensor.readTempC());
+      Serial.println("°C");
+    }
+  }
 }

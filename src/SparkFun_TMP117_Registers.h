@@ -31,33 +31,19 @@ Distributed as-is; no warranty is given.
    - Low Power Consumption 3.5-µA, 1-Hz Conversion Cycle
 */
 
-/*  Conversion Cycle Time in CC Mode (found on the datasheet page 26 table 6)
-              AVG       0       1       2       3
-      CONV  averaging  (0)     (8)     (32)   (64)
-        0             15.5ms  125ms   500ms    1s     C15mS5
-        1             125ms   125ms   500ms    1s     C125mS
-        2             250ms   250ms   500ms    1s     C250mS
-        3             500ms   500ms   500ms    1s     C500mS
-        4             1s      1s      1s       1s     C1S
-        5             4s      4s      4s       4s     C4S
-        6             8s      8s      8s       8s     C8S
-        7             16s     16s     16s      16s    C16S
-*/
-
 // Address of the registers (where to look to find the information in the registers)
-enum TMP117_Register 
+enum TMP117_Register
 {
-	TMP117_TEMP_RESULT = 0X00,
-	TMP117_CONFIGURATION = 0x01,
-	TMP117_T_HIGH_LIMIT = 0X02,
-	TMP117_T_LOW_LIMIT = 0X03,
-	TMP117_EEPROM_UL = 0X04,
-	TMP117_EEPROM1 = 0X05,
-	TMP117_EEPROM2 = 0X06,
-	TMP117_TEMP_OFFSET = 0X07,
-	TMP117_EEPROM3 = 0X08,
-	TMP117_DEVICE_ID = 0X0F
+  TMP117_TEMP_RESULT = 0X00,
+  TMP117_CONFIGURATION = 0x01,
+  TMP117_T_HIGH_LIMIT = 0X02,
+  TMP117_T_LOW_LIMIT = 0X03,
+  TMP117_EEPROM_UL = 0X04,
+  TMP117_EEPROM1 = 0X05,
+  TMP117_EEPROM2 = 0X06,
+  TMP117_TEMP_OFFSET = 0X07,
+  TMP117_EEPROM3 = 0X08,
+  TMP117_DEVICE_ID = 0X0F
 };
-
 
 #endif

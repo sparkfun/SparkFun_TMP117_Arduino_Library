@@ -52,7 +52,7 @@ void setup()
   sensor.setAddress(0x48); // Set the address of the device - see above address comments
 
   Serial.println("TMP117 Example 5: Setting High and Low Temperature Limits");
-  if (sensor.isAlive() == true) // Function to check if the sensor will correctly self-identify with the proper Device ID/Address
+  if (sensor.begin() == true) // Function to check if the sensor will correctly self-identify with the proper Device ID/Address
   {
     Serial.println("Begin");
   }
@@ -78,8 +78,9 @@ void loop()
   int limit = Serial.parseInt(); // Reads the input from the serial port
   if (limit == 1)
   {
-    Serial.println("Please enter Low Limit Temperature (between -256°C and 256°C): ");
-    lowTemp = Serial.parseInt();
+    Serial.println("Please enter Low Limit Temperature (between -256°C and 255.9°C): ");
+    while (Serial.available() == 0); // Waits for the user input
+    lowTemp = Serial.parseFloat();
     sensor.setLowLimit(lowTemp);
     delay(1000);
     Serial.print("New Low Limit (in °C): ");
@@ -87,8 +88,9 @@ void loop()
   }
   else if (limit == 2)
   {
-    Serial.println("Please enter High Limit Temperature (between -256°C and 256°C): ");
-    highTemp = Serial.parseInt(); // Reads the input from the serial port
+    Serial.println("Please enter High Limit Temperature (between -256°C and 255.9°C): ");
+    while (Serial.available() == 0); // Waits for the user input
+    highTemp = Serial.parseFloat(); // Reads the input from the serial port
     sensor.setHighLimit(highTemp);
     delay(1000);
     Serial.print("New High Limit (in °C): ");

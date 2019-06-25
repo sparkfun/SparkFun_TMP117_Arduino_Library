@@ -72,38 +72,33 @@ class TMP117
 public:
 	TMP117(TwoWire &wirePort = Wire, uint8_t addr = DEFAULT_DEVICE_ADDR); // Constructor
 
-	bool isAlive();				   // Checks for ACK over I2C, and checks the device ID of the TMP
-	uint8_t getAddress();		   // Lets the user see the current address of the device
-	void setAddress(uint8_t addr); // Lets the user set the address of the device
-	float readTempC();			   // Returns the temperature in degrees C
-	float readTempF();			   // Converts readTempC result to degrees F
-	float temperatureOffset();	 // Reads the offset temperature value from the register
-	TMP117_ALERT getAlert();	   // Returns the type of alert being caused
-	// bool isHighAlert();															   // Sets an alert when the temperature is too high for the device
-	// bool isLowAlert();															   // Sets an alert when the temperature is too low for the device
-	void softReset();						 // Performs a software reset on the Configuration Register Field bits
-	float getTemperatureOffset();			 // Reads the temperature offset
-	void setTemperatureOffset(float offset); // Writes to the temperature offset
-	float getLowLimit();
-	void setLowLimit(float lowLimit);
-	float getHighLimit();
-	void setHighLimit(float highLimit);
-	// uint8_t getConversionMode();				// Checks to see the Conversion Mode the device is currently in
-	// void setConversionMode(uint8_t cycle);		// Sets the Conversion Mode of the device (4 different types)
-	// uint8_t getConversionCycleTime();			// Read from the Conversion Cycle Time register
-	// void setConversionCycleTime(uint8_t cycle); // Write to the Conversion Cycle Time register
-	bool dataReady(); // Checks to see if there is data ready from the device
+	bool begin();								 // Checks for ACK over I2C, and checks the device ID of the TMP
+	uint8_t getAddress();						 // Lets the user see the current address of the device
+	void setAddress(uint8_t addr);				 // Lets the user set the address of the device
+	double readTempC();							 // Returns the temperature in degrees C
+	double readTempF();							 // Converts readTempC result to degrees F
+	float temperatureOffset();					 // Reads the offset temperature value from the register
+	TMP117_ALERT getAlert();					 // Returns the type of alert being caused
+	void softReset();							 // Performs a software reset on the Configuration Register Field bits
+	float getTemperatureOffset();				 // Reads the temperature offset
+	void setTemperatureOffset(float offset);	 // Writes to the temperature offset
+	float getLowLimit();						 // Returns the low limit register
+	void setLowLimit(float lowLimit);			 // Sets the low limit temperature for the low limit register
+	float getHighLimit();						 // Returns the high limit register
+	void setHighLimit(float highLimit);			 // Sets the low limit temperature for the low limit register
+	uint8_t getConversionMode();				 // Checks to see the Conversion Mode the device is currently in
+	void setConversionMode(uint8_t cycle);		 // Sets the Conversion Mode of the device (4 different types)
+	uint8_t getConversionCycleTime();			 // Read from the Conversion Cycle Time register
+	void setConversionCycleTime(uint16_t cycle); // Write to the Conversion Cycle Time register
+	bool dataReady();							 // Checks to see if there is data ready from the device
 
 private:
 	TwoWire *_i2cPort = NULL; //The generic connection to user's chosen I2C hardware
 	uint8_t _deviceAddress;   // Address of Temperature sensor
 
-	TMP117_ALERT alert_type;
-
 	// Functions below to read and write to registers
-	void readRegisters(TMP117_Register reg, byte *buffer, byte len);
-	uint16_t readRegister(TMP117_Register reg);				// Reads 2 register bytes from sensor
-	void writeRegister(TMP117_Register reg, uint16_t data); // Wires single byte of data to the sensor
+	uint16_t readRegister(uint8_t reg);				// Reads 2 register bytes from sensor
+	void writeRegister(uint8_t reg, uint16_t data); // Wires single byte of data to the sensor
 };
 
 #endif

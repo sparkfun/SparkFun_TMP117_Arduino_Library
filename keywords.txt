@@ -11,15 +11,21 @@ TMP117	KEYWORD1
 ######################################################################
 
 begin	KEYWORD2
-isConnected	KEYWORD2
+getAddress	KEYWORD2
+setAddress      KEYWORD2
 readTempC	KEYWORD2
 readTempF	KEYWORD2
-temperatureOffset	KEYWORD2
-getAlert	KEYWORD2
-isHighAlert	KEYWORD2
-isLowAlert	KEYWORD2
+getTemperatureOffset	KEYWORD2
+setTemperatureOffset	KEYWORD2
+getLowLimit	KEYWORD2
+setLowLimit	KEYWORD2
+getHighLimit	KEYWORD2
+setHighLimit	KEYWORD2
+getConversionCycleTime	KEYWORD2
+setConversionCycleTime	KEYWORD2
+getConversionMode	KEYWORD2
+setConversionMode	KEYWORD2
+dataReady KEYWORD2
 softReset	KEYWORD2
 readRegister	KEYWORD2
-readRegisters	KEYWORD2
 writeRegister	KEYWORD2
-writeRegisters	KEYWORD2

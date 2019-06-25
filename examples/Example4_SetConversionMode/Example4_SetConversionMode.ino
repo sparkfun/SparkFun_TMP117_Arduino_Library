@@ -62,7 +62,7 @@ void setup()
   sensor.setAddress(0x48); // Set the address of the device - see above address comments
 
   Serial.println("TMP117 Example 5: Setting High and Low Temperature Limits");
-  if (sensor.isAlive() == true) // Function to check if the sensor will correctly self-identify with the proper Device ID/Address
+  if (sensor.begin() == true) // Function to check if the sensor will correctly self-identify with the proper Device ID/Address
   {
     Serial.println("Begin");
   }
@@ -71,9 +71,12 @@ void setup()
     Serial.println("Device failed to setup.");
     while (1); // Runs forever if the sensor does not initialize correctly
   }
+  
   Serial.print("Current Conversion Mode: ");
   Serial.println(sensor.getConversionMode());
 }
+
+
 
 // For function to work, make sure the Serial Monitor is set to "No Line Ending"
 void loop()
@@ -87,6 +90,8 @@ void loop()
   if (correctMode == 0 || correctMode == 1 || correctMode == 2 || correctMode == 3)
   {
     sensor.setConversionMode((uint8_t)mode);
+    Serial.print("New Conversion Mode: ");
+    Serial.println(sensor.getConversionMode());
     Serial.println(); // Create a whitespace for easier readings
     // delay(500);
   }

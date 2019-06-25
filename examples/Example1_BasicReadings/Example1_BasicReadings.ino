@@ -51,7 +51,7 @@ void setup()
   sensor.setAddress(0x48); // Set the address of the device - see above address comments
 
   Serial.println("TMP117 Example 1: Basic Readings");
-  if (sensor.isAlive() == true)
+  if (sensor.begin() == true)
   {
     Serial.println("Begin");
   }
