@@ -1,12 +1,13 @@
 /******************************************************************************
- Example5_SetTemperatureLimits.ino
+  Example6_SetConversionCycleTime.ino
   Example for the TMP117 I2C Temperature Sensor
   Madison Chodikov @ SparkFun Electronics
-  June 11 2019
+  July 3rd 2019
   ~
 
-  This sketch can set and get the temperature limits for the sensor. These
-  limits can be set within +/- 256°C.
+  This sketch can set and get the Conversion Times in Continuous Conversion mode
+  for the Sensor. A chart for the averaging modes and the conversion times can
+  be found in the comments below or in the Datasheet on Page 26, Table 7.
 
   Resources:
   Wire.h (included with Arduino IDE)
@@ -31,6 +32,22 @@
   For more information on reaching the most accurate readings from the sensor,
   reference the "Precise Temperature Measurements with TMP116" datasheet that is
   linked on Page 35 of the TMP117's datasheet.
+
+
+     Conversion Cycle Times in CC Mode (found in the datasheet page 26 table 6)
+               AVG       0       1       2       3
+       CONV  averaging  (0)     (8)     (32)   (64)
+         0             15.5ms  125ms   500ms    1s
+         1             125ms   125ms   500ms    1s
+         2             250ms   250ms   500ms    1s
+         3             500ms   500ms   500ms    1s
+         4             1s      1s      1s       1s
+         5             4s      4s      4s       4s
+         6             8s      8s      8s       8s
+         7             16s     16s     16s      16s
+
+  CONV = Conversion Cycle Bit
+  AVG = Conversion Averaging Mode
 */
 
 #include <Wire.h> // Used to establish serial communication on the I2C bus
@@ -62,57 +79,58 @@ void setup()
     while (1); // Runs forever if the sensor does not initialize correctly
   }
 
-  Serial.print("Current Low Limit: ");
-  Serial.println(sensor.getLowLimit());
-  Serial.print("Current High Limit: ");
-  Serial.println(sensor.getHighLimit());
+  Serial.print("Current Conversion Average Mode: ");
+  Serial.println(sensor.getConversionAverageMode());
+  Serial.print("Current Conversion Cycle Bit Value: ");
+  Serial.println(sensor.getConversionCycleBit());
 }
 
+
+// Global variables declared for the loop
+uint8_t cycleBit = 0;
+uint8_t avMode = 0;
 
 // For function to work, make sure the Serial Monitor is set to "No Line Ending"
 void loop()
 {
-  float lowTemp, highTemp;
-  Serial.println("Enter which limit to change, 1 for Low Limit and 2 for High Limit: ");
+  Serial.println("Enter 1 for changing the Averaging Mode or 2 for changing the Cycle Bit Value: ");
   while (Serial.available() == 0); // Waits for the user input
-  int limit = Serial.parseInt(); // Reads the input from the serial port
-  if (limit == 1)
+  int mode = Serial.parseInt(); // Reads the input from the serial port
+  if (mode == 1)
   {
-    Serial.print("Current Low Limit: ");
-    Serial.println(sensor.getLowLimit());
-    Serial.println("Please enter Low Limit Temperature (between -256°C and 255.98°C): ");
+    Serial.print("Current Averaging Mode: ");
+    Serial.println(sensor.getConversionAverageMode());
+    Serial.println("Please 0 - 3 for the New Averaging Mode: ");
     while (Serial.available() == 0); // Waits for the user input
-    lowTemp = Serial.parseFloat();
-    if ((lowTemp < -256) || (lowTemp > 255.98))
+    avMode = Serial.parseInt();
+    if ((avMode > 0) || (avMode < 3))
     {
-      sensor.setLowLimit(lowTemp);
-      delay(1000);
-      Serial.print("New Low Limit (in °C): ");
-      Serial.println(sensor.getLowLimit());
+      sensor.setConversionAverageMode((uint8_t)avMode);
+      Serial.print("New Conversion Average Mode: ");
+      Serial.println(sensor.getConversionAverageMode());
     }
     else
     {
-      Serial.println("Please Enter a temperature between -256°C and 255.98°C");
+      Serial.println("Please Enter a Number 0 - 3");
     }
-
   }
-  else if (limit == 2)
+
+  else if (mode == 2)
   {
-    Serial.print("Current High Limit: ");
-    Serial.println(sensor.getHighLimit());
-    Serial.println("Please enter High Limit Temperature (between -256°C and 255.98°C): ");
+    Serial.print("Current Cycle Bit Value: ");
+    Serial.println(sensor.getConversionCycleBit());
+    Serial.println("Please enter 0 - 7 for the Conversion Cycle Bit: ");
     while (Serial.available() == 0); // Waits for the user input
-    highTemp = Serial.parseFloat(); // Reads the input from the serial port
-    if ((highTemp < -256) || (highTemp < 255.98))
+    cycleBit = Serial.parseInt(); // Reads the input from the serial port
+    if ((cycleBit > 0) || (cycleBit < 7))
     {
-      sensor.setHighLimit(highTemp);
-      delay(1000);
-      Serial.print("New High Limit (in °C): ");
-      Serial.println(sensor.getHighLimit());
+      sensor.setConversionCycleBit((uint8_t)cycleBit);
+      Serial.print("New Conversion Cycle Bit Value: ");
+      Serial.println(sensor.getConversionCycleBit());
     }
     else
     {
-      Serial.println("Please Enter a temperature between -256°C and 255.98°C");
+      Serial.println("Please enter a Number 0 - 7");
     }
   }
   else

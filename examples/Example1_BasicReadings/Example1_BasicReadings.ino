@@ -65,6 +65,7 @@ void setup()
 
 void loop()
 {
+  // Data Ready is primarily for a flag for the conversion modes - in continous conversion the dataReady flag should always be high
   if (sensor.dataReady() == true) // Function to make sure that there is data ready to be printed, only prints temperature values when data is ready
   {
     float tempC = sensor.readTempC();

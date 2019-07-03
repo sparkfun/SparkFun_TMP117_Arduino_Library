@@ -41,10 +41,9 @@
   SCL = 0x4B
 
 
-  There are 4 different modes
-  Continuous Conversion (CC) = 0b00 = 0
-  Shutdown (SD) = 0b01 = 1
-  Continuous Conversion (CC), Same as 00 (Reads back = 00) = 0b10 = 2
+  There are 3 different modes
+  Continuous Conversion (CC) = 0b00 = 1
+  Shutdown (SD) = 0b01 = 2
   One-Shot Conversion (OS) = 0b11 = 3
 */
 
@@ -52,7 +51,6 @@
 #include <SparkFun_TMP117.h> // Used to send and recieve specific information from our sensor
 
 TMP117 sensor; // Initalize sensor object
-uint8_t mode = 0; // The conversion mode to be used (the sensor is set to 0 by default)
 
 void setup()
 {
@@ -61,7 +59,7 @@ void setup()
   Wire.setClock(400000);   // Set clock speed to be the fastest for better communication (fast mode)
   sensor.setAddress(0x48); // Set the address of the device - see above address comments
 
-  Serial.println("TMP117 Example 5: Setting High and Low Temperature Limits");
+  Serial.println("TMP117 Example 4: Setting Conversion Modes");
   if (sensor.begin() == true) // Function to check if the sensor will correctly self-identify with the proper Device ID/Address
   {
     Serial.println("Begin");
@@ -71,33 +69,71 @@ void setup()
     Serial.println("Device failed to setup.");
     while (1); // Runs forever if the sensor does not initialize correctly
   }
-  
-  Serial.print("Current Conversion Mode: ");
-  Serial.println(sensor.getConversionMode());
-}
 
+  Serial.println("Conversion Modes: ");
+  Serial.println("1: Continuous");
+  Serial.println("2: Shutdown");
+  Serial.println("3: One-Shot");
+  Serial.print("Current Conversion Mode: ");
+  sensor.getConversionMode(); // Prints the conversion mode of the device to the Serial Monitor
+}
 
 
 // For function to work, make sure the Serial Monitor is set to "No Line Ending"
 void loop()
 {
-  Serial.println("Enter your mode of Conversion (number 0 - 3): ");
+  Serial.println("Enter your mode of Conversion (number 1 - 3): ");
   while (Serial.available() == 0); // Waits for the user input
   byte correctMode = Serial.parseInt(); // Reads the input from the serial port
   Serial.print("Number recieved: ");
   Serial.println(correctMode);
-  delay(500);
-  if (correctMode == 0 || correctMode == 1 || correctMode == 2 || correctMode == 3)
+  if (correctMode == 1)
   {
-    sensor.setConversionMode((uint8_t)mode);
+    sensor.setContinuousConversionMode();
     Serial.print("New Conversion Mode: ");
-    Serial.println(sensor.getConversionMode());
+    if (sensor.getConversionMode() == 0b00)
+    {
+      Serial.println("Continuous Conversion");
+    }
+    else
+    {
+      Serial.println("Error setting new Conversion Mode");
+    }
     Serial.println(); // Create a whitespace for easier readings
-    // delay(500);
+  }
+  else if (correctMode == 2)
+  {
+    sensor.setShutdownMode();
+    Serial.print("New Conversion Mode: ");
+    if (sensor.getConversionMode() == 0b01)
+    {
+      Serial.println("Shutdown Mode");
+    }
+    else
+    {
+      Serial.println("Error setting new Conversion Mode");
+    }
+    sensor.getConversionMode();
+    Serial.println(); // Create a whitespace for easier readings
+  }
+  else if (correctMode == 3)
+  {
+    sensor.setOneShotMode();
+    Serial.print("New Conversion Mode: ");
+    if (sensor.getConversionMode() == 0b11)
+    {
+      Serial.println("One-Shot Mode");
+    }
+    else
+    {
+      Serial.println("Error setting new Conversion Mode");
+    }
+    sensor.getConversionMode();
+    Serial.println(); // Create a whitespace for easier readings
   }
   else
   {
-    Serial.println("Conversion mode unsuccessfully set - Please enter a number 0 - 3");
+    Serial.println("Conversion mode unsuccessfully set - Please enter a number 1 - 3");
     Serial.println(); // Create a whitespace for easier readings
   }
   delay(1000);

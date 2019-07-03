@@ -37,14 +37,14 @@ Distributed as-is; no warranty is given.
 #include "SparkFun_TMP117.h"
 
 /* CONSTRUCTOR
-    This function, called when you initialize the class will write 
-    the variable address into a private variable for future use. 
-    The initial variable address should be 0x48. 
+    This function will use the main I2C port on the Arduino 
+	by default, but this is configurable with the setBus function.
+	This needs to be called when running the example sketches to
+	initialize the sensor and be able to call to the library. 
 */
-TMP117::TMP117(TwoWire &wirePort, uint8_t addr)
+TMP117::TMP117(TwoWire &wirePort)
 {
-	_deviceAddress = addr;
-	_i2cPort = &wirePort; //use the main I2C port on the Arduino by default, but this is configurable with the setBus function
+	_i2cPort = &wirePort;
 }
 
 /* GET ADDRESS
@@ -226,45 +226,109 @@ void TMP117::setHighLimit(float highLimit)
 	writeRegister(TMP117_T_HIGH_LIMIT, finalLimit);		// Writes to the high limit temperature register with the new limit value
 }
 
+/*GET HIGH ALERT
+	This function reads the 15th bit of the configuration register to 
+	tell if the conversion result is higher than the high limit. This
+	is set as a High Alert flag. This can be found on page 25 of the 
+	datasheet.
+*/
+bool TMP117::getHighAlert()
+{
+	uint16_t configReg = 0;
+	configReg = readRegister(TMP117_CONFIGURATION);
+
+	uint8_t highAlert = bitRead(configReg, 15); // Fills with the 15th bit of the configuration register
+
+	if (highAlert == 1)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+/*GET LOW ALERT
+	This function reads the 14th bit of the configuration register to 
+	tell if the conversion result is lower than the low limit. This
+	is set as a Low Alert flag. This can be found on page 25 of the 
+	datasheet.
+*/
+bool TMP117::getLowAlert()
+{
+	uint16_t configReg = 0;
+	configReg = readRegister(TMP117_CONFIGURATION);
+
+	uint8_t lowAlert = bitRead(configReg, 14); // Fills with the 14th bit of the configuration register
+
+	if (lowAlert == 1)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 /* SOFTWARE RESET
 	This function performs a software reset, loading all the default
-	values into the configuration register. This uses the struct in 
-	the SparkFun_TMP117.h file.
+	values into the configuration register.
 */
 void TMP117::softReset()
 {
-	CONFIGURATION_REG reg;
-	reg.CONFIGURATION_COMBINED = readRegister(TMP117_CONFIGURATION);
-	reg.CONFIGURATION_FIELDS.SOFT_RESET = 0b1;
-	// Writes to the register to be 1 when this function is called upon
-	writeRegister(TMP117_CONFIGURATION, reg.CONFIGURATION_FIELDS.SOFT_RESET);
+	uint16_t reset = 0;
+	reset = readRegister(TMP117_CONFIGURATION); // Fills mode to be the configuration register
+	bitWrite(reset, 1, 1);
+	writeRegister(TMP117_CONFIGURATION, reset);
 }
 
-/* SET CONVERSION MODE
-	This function writes the mode for the conversions.
-	This can be found in the datasheet on Page 25 Table 6.
+/* SET CONTINUOUS CONVERSION MODE
+	This function sets the conversion mode of the sensor to be 
+	continuous. This can be found in the datasheet on Page 25 Table 6.
 	The TMP117 defaults to Continuous Conversion Mode on reset.
 */
-void TMP117::setConversionMode(uint8_t cycle)
+void TMP117::setContinuousConversionMode()
 {
-	CONFIGURATION_REG reg;
-	reg.CONFIGURATION_COMBINED = cycle;
-	if (cycle == 0)
-	{
-		writeRegister(TMP117_CONFIGURATION, 0b00);
-	}
-	else if (cycle == 1)
-	{
-		writeRegister(TMP117_CONFIGURATION, 0b01);
-	}
-	else if (cycle == 2)
-	{
-		writeRegister(TMP117_CONFIGURATION, 0b10);
-	}
-	else if (cycle == 3)
-	{
-		writeRegister(TMP117_CONFIGURATION, 0b11);
-	}
+	uint16_t mode = 0;
+	mode = readRegister(TMP117_CONFIGURATION); // Fills mode to be the configuration register
+
+	bitClear(mode, 10); // Clears bit 10
+	bitClear(mode, 11); // Clears bit 11
+	writeRegister(TMP117_CONFIGURATION, mode);
+}
+
+/* SET ONE SHOT MODE
+	This function sets the conversion mode of the sensor to be 
+	in one shot mode. This can be found in the datasheet on Page 
+	25 Table 6. The TMP117 defaults to Continuous Conversion Mode 
+	on reset.
+*/
+void TMP117::setOneShotMode()
+{
+	uint16_t mode = 0;
+	mode = readRegister(TMP117_CONFIGURATION); // Fills mode to be the configuration register
+
+	bitWrite(mode, 11, 1); // Sets bit 11 to 1
+	bitWrite(mode, 10, 1); // Sets bit 10 to 1
+	writeRegister(TMP117_CONFIGURATION, mode);
+}
+
+/* SET SHUTDOWN MODE
+	This function sets the conversion mode of the sensor to be 
+	in shutdown mode. This can be found in the datasheet on Page 
+	25 Table 6. The TMP117 defaults to Continuous Conversion Mode 
+	on reset.
+*/
+void TMP117::setShutdownMode()
+{
+	uint16_t mode = 0;
+	mode = readRegister(TMP117_CONFIGURATION); // Fills mode to be the configuration register
+
+	bitClear(mode, 11);	// Clears bit 11
+	bitWrite(mode, 10, 1); // Sets bit 10 to 1
+	writeRegister(TMP117_CONFIGURATION, mode);
 }
 
 /* GET CONVERSION MODE
@@ -274,63 +338,238 @@ void TMP117::setConversionMode(uint8_t cycle)
 */
 uint8_t TMP117::getConversionMode()
 {
-	CONFIGURATION_REG reg;
-	reg.CONFIGURATION_COMBINED = readRegister(TMP117_CONFIGURATION);
-	uint8_t mode = reg.CONFIGURATION_FIELDS.MOD; // Stores the information from the MOD register
-	return mode;
-}
+	uint16_t configReg = 0;
+	configReg = readRegister(TMP117_CONFIGURATION); // Fill configReg with the configuration register
 
-/* GET CONVERSION CYCLE TIME
-	This function gets the conversion cycle time of the device.
-	This only works in Continuous Conversion mode, which was set 
-	in the above function.
-*/
-uint8_t TMP117::getConversionCycleTime()
-{
-	uint16_t cycleTime = readRegister(TMP117_CONFIGURATION);
-	if (cycleTime & 0 << 6 && cycleTime & 0 << 5) // Checks to see if bits 5 and 6 are 00
+	uint8_t currentMode1 = bitRead(configReg, 11); // Left most conversion bit
+	uint8_t currentMode2 = bitRead(configReg, 10); // Right most conversion bit
+
+	if ((currentMode1 == 0) && (currentMode2 == 0)) // 0b00, Continuous Conversion Mode
 	{
-		return 0;
+		return 0b00;
 	}
-	else if (cycleTime & 0 << 6 && cycleTime & 1 << 5) // Checks to see if bits 5 and 6 are 01
+	else if ((currentMode1 == 1) && (currentMode2 == 0)) // 0b10, should not be set this
 	{
-		return 1;
+		return 0b10;
 	}
-	else if (cycleTime & 1 << 6 && cycleTime & 0 << 5) // Checks to see if bits 5 and 6 are 10
+	else if ((currentMode1 == 0) && (currentMode2 == 1)) // 0b01, Shutdown Mode
 	{
-		return 2;
+		return 0b01;
 	}
-	else if (cycleTime & 1 << 6 && cycleTime & 1 << 5) // Checks to see if bits 5 and 6 are 11
+	else if ((currentMode1 == 1) && (currentMode2 == 1)) // 0b11, One-Shot Mode
 	{
-		return 3;
+		return 0b11;
 	}
 }
 
-/* SET CONVERSION CYCLE TIME
-	This function sets the conversion cycle time of the device.
-	This only works in Continuous Conversion mode, which was set 
-	in an above function. The table of conversion cycle times can
-	be seen below
-
-	  Conversion Cycle Time in CC Mode (found on the datasheet page 26 table 6)
-              AVG       0       1       2       3
-      CONV  averaging  (0)     (8)     (32)   (64)
-        0             15.5ms  125ms   500ms    1s     C15mS5
-        1             125ms   125ms   500ms    1s     C125mS
-        2             250ms   250ms   500ms    1s     C250mS
-        3             500ms   500ms   500ms    1s     C500mS
-        4             1s      1s      1s       1s     C1S
-        5             4s      4s      4s       4s     C4S
-        6             8s      8s      8s       8s     C8S
-        7             16s     16s     16s      16s    C16S
-*/
-void TMP117::setConversionCycleTime(uint16_t cycle)
+/*SET CONVERSION AVERAGE MODE 
+	This function sets the conversion averaging mode of the device
+	when in Continuous Conversion Mode. This can be found on page 
+	25 of the TMP117 datasheet. 
+ */
+void TMP117::setConversionAverageMode(uint8_t convMode)
 {
-	CONFIGURATION_REG reg;
-	reg.CONFIGURATION_COMBINED = readRegister(TMP117_CONFIGURATION);
-	reg.CONFIGURATION_FIELDS.CONV = 0b000;
-	cycle = reg.CONFIGURATION_FIELDS.CONV;
-	writeRegister(TMP117_CONFIGURATION, cycle);
+	uint16_t mode = 0;
+	mode = readRegister(TMP117_CONFIGURATION); // Fills in time to be the config register
+
+	if (convMode == 1) // No Averaging
+	{
+		bitClear(mode, 5); // Clears bit 5
+		bitClear(mode, 6); // Clears bit 6
+		writeRegister(TMP117_CONFIGURATION, mode);
+	}
+	else if (convMode == 2) // 8 Averaged Conversions
+	{
+		bitClear(mode, 6);	// Clears bit 6
+		bitWrite(mode, 5, 1); // Sets bit 5 to be 1
+		writeRegister(TMP117_CONFIGURATION, mode);
+	}
+	else if (convMode == 3) // 32 Averaged Conversions
+	{
+		bitWrite(mode, 6, 1); // Sets bit 6 to be 1
+		bitClear(mode, 5);	// Clears bit 5
+		writeRegister(TMP117_CONFIGURATION, mode);
+	}
+	else if (convMode == 4) // 64 Averaged Conversions
+	{
+		bitWrite(mode, 6, 1); // Sets bit 6 to be 1
+		bitWrite(mode, 5, 1); // Sets bit 5 to be 1
+		writeRegister(TMP117_CONFIGURATION, mode);
+	}
+}
+
+/*GET CONVERSION AVERAGE MODE
+	This function reads for the averaging mode of the conversions, 
+	then prints it to the Serial Monitor in the Arduino IDE.
+	This can be found in the datasheet on Page 25 Table 6.
+ */
+uint8_t TMP117::getConversionAverageMode()
+{
+	uint16_t configReg = 0;
+	configReg = readRegister(TMP117_CONFIGURATION); // Fills configReg with config register values
+
+	uint8_t currentMode6 = bitRead(configReg, 6); // Left most averaging bit
+	uint8_t currentMode5 = bitRead(configReg, 5); // Right most averaging bit
+
+	if ((currentMode6 == 0) && (currentMode5 == 0)) // 0b00, no averaging
+	{
+		return 0b00;
+	}
+	else if ((currentMode6 == 0) && (currentMode5 == 1)) // 0b01, 8 averaged conversions
+	{
+		return 0b01;
+	}
+	else if ((currentMode6 == 1) && (currentMode5 == 0)) // 0b10, 32 averaged conversions
+	{
+		return 0b10;
+	}
+	else if ((currentMode6 == 1) && (currentMode5 == 1)) // 0b11, 64 averaged conversions
+	{
+		return 0b11;
+	}
+}
+
+/* SET CONVERSION CYCLE BIT
+	This function sets the conversion cycle time bit in 
+	Continuous Conversion mode. The times for the conversions
+	can be found below or in the datasheet on Page 25 Table
+	6 or on Page 27 Table 7. The user puts in 0-7 and it will
+	return the cycle time accoring to the values in the chart.
+
+ 	  Conversion Cycle Time in CC Mode (found on the datasheet page 26 table 6)
+               AVG       0       1       2       3
+       CONV  averaging  (0)     (8)     (32)   (64)
+         0             15.5ms  125ms   500ms    1s     
+         1             125ms   125ms   500ms    1s     
+         2             250ms   250ms   500ms    1s     
+         3             500ms   500ms   500ms    1s     
+         4             1s      1s      1s       1s     
+         5             4s      4s      4s       4s     
+         6             8s      8s      8s       8s     
+         7             16s     16s     16s      16s    
+ */
+void TMP117::setConversionCycleBit(uint8_t convTime)
+{
+	uint16_t mode = 0;
+	mode = readRegister(TMP117_CONFIGURATION); // Fills in time to be the config register
+
+	if (convTime == 0) // 0b000
+	{
+		bitClear(mode, 9); // Clears bit 7
+		bitClear(mode, 8); // Clears bit 8
+		bitClear(mode, 7); // Clears bit 9
+		writeRegister(TMP117_CONFIGURATION, mode);
+	}
+	else if (convTime == 1) // 0b001
+	{
+		bitClear(mode, 9);	// Clears bit 9
+		bitClear(mode, 8);	// Clears bit 8
+		bitWrite(mode, 7, 1); // Sets bit 7 to be 1
+		writeRegister(TMP117_CONFIGURATION, mode);
+	}
+	else if (convTime == 2) // 0b010
+	{
+		bitClear(mode, 9);	// Clears bit 9
+		bitWrite(mode, 8, 1); // Sets bit 8 to be 1
+		bitClear(mode, 7);	// Clears bit 7
+		writeRegister(TMP117_CONFIGURATION, mode);
+	}
+	else if (convTime == 3) // 0b011
+	{
+		bitClear(mode, 9);	// Clears bit 9
+		bitWrite(mode, 8, 1); // Sets bit 8 to be 1
+		bitWrite(mode, 7, 1); // Sets bit 7 to be 1
+		writeRegister(TMP117_CONFIGURATION, mode);
+	}
+	else if (convTime == 4) // 0b100
+	{
+		bitWrite(mode, 9, 1); // Sets bit 6 to be 1
+		bitClear(mode, 8);	// Clears bit 8
+		bitClear(mode, 7);	// Clears bit 7
+		writeRegister(TMP117_CONFIGURATION, mode);
+	}
+	else if (convTime == 5) // 0b101
+	{
+		bitWrite(mode, 9, 1); // Sets bit 9 to be 1
+		bitClear(mode, 8);	// Clears bit 8
+		bitWrite(mode, 7, 1); // Sets bit 7 to be 1
+		writeRegister(TMP117_CONFIGURATION, mode);
+	}
+	else if (convTime == 6) // 0b110
+	{
+		bitWrite(mode, 9, 1); // Sets bit 9 to be 1
+		bitWrite(mode, 8, 1); // Sets bit 8 to be 1
+		bitClear(mode, 7);	// Clears bit 7
+		writeRegister(TMP117_CONFIGURATION, mode);
+	}
+	else if (convTime == 7) // 0b111
+	{
+		bitWrite(mode, 9, 1); // Sets bit 9 to be 1
+		bitWrite(mode, 8, 1); // Sets bit 8 to be 1
+		bitWrite(mode, 7, 1); // Sets bit 7 to be 1
+		writeRegister(TMP117_CONFIGURATION, mode);
+	}
+}
+
+/* GET CONVERSION CYCLE BIT
+	This function returns the Conversion Cycle Bit value that the 
+	device is currently in at the time. This bit can help determine
+	the conversion cycle time that the device is in while being in
+	continuous conversion mode. 
+
+ 	  Conversion Cycle Time in CC Mode (found on the datasheet page 26 table 6)
+               AVG       0       1       2       3
+       CONV  averaging  (0)     (8)     (32)   (64)
+         0             15.5ms  125ms   500ms    1s     
+         1             125ms   125ms   500ms    1s     
+         2             250ms   250ms   500ms    1s     
+         3             500ms   500ms   500ms    1s     
+         4             1s      1s      1s       1s     
+         5             4s      4s      4s       4s     
+         6             8s      8s      8s       8s     
+         7             16s     16s     16s      16s    
+*/
+uint8_t TMP117::getConversionCycleBit()
+{
+	uint16_t configReg = 0;
+	configReg = readRegister(TMP117_CONFIGURATION); // Fills configReg with config register values
+
+	uint8_t currentTime9 = bitRead(configReg, 6); // Left most bit (9)
+	uint8_t currentTime8 = bitRead(configReg, 5); // Middle bit (8)
+	uint8_t currentTime7 = bitRead(configReg, 7); // Right most bit (7)
+
+	if ((currentTime9 == 0) && (currentTime8 == 0) && (currentTime7 == 0)) // 0b000
+	{
+		return 0b000;
+	}
+	else if ((currentTime9 == 0) && (currentTime8 == 0) && (currentTime7 == 1)) // 0b001
+	{
+		return 0b001;
+	}
+	else if ((currentTime9 == 0) && (currentTime8 == 1) && (currentTime7 == 0)) // 0b010
+	{
+		return 0b010;
+	}
+	else if ((currentTime9 == 0) && (currentTime8 == 1) && (currentTime7 == 1)) // 0b011
+	{
+		return 0b011;
+	}
+	else if ((currentTime9 == 1) && (currentTime8 == 0) && (currentTime7 == 0)) // 0b100
+	{
+		return 0b100;
+	}
+	else if ((currentTime9 == 1) && (currentTime8 == 0) && (currentTime7 == 1)) // 0b101
+	{
+		return 0b101;
+	}
+	else if ((currentTime9 == 1) && (currentTime8 == 1) && (currentTime7 == 0)) // 0b110
+	{
+		return 0b110;
+	}
+	else if ((currentTime9 == 1) && (currentTime8 == 1) && (currentTime7 == 1)) // 0b111
+	{
+		return 0b111;
+	}
 }
 
 /* DATA READY
