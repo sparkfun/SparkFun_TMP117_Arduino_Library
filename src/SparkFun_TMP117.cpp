@@ -47,27 +47,7 @@ TMP117::TMP117(TwoWire &wirePort)
 	_i2cPort = &wirePort;
 }
 
-/* GET ADDRESS
-	This function calls for the current address of the device to be
-	set up. The addresses are 0x48 = GND, 0x49 = V+, 0x4A = ADD0, 0x4B = SCL
-*/
-uint8_t TMP117::getAddress()
-{
-	return _deviceAddress;
-}
-
-/* SET ADDRESS
-	This function calls for the user to write the address of the 
-	device with 0x48 = GND, 0x49 = V+, 0x4A = ADD0, 0x4B = SCL
-	The sensor can be used to connect up to 4 devices if the addresses
-	are called correctly (Found on Page 19, Table 2)
-*/
-void TMP117::setAddress(uint8_t addr)
-{
-	_deviceAddress = addr;
-}
-
-/* IS ALIVE
+/* BEGIN
     This function checks if the TMP will ACK over I2C, and
 	if the TMP will correctly self-identify with the proper
 	device ID. Returns true if both checks pass.
@@ -91,6 +71,28 @@ bool TMP117::begin()
 	}
 
 	return true; //returns true if all the checks pass
+}
+
+/* GET ADDRESS
+	This function calls for the current address of the device to be
+	set up. The addresses are 0x48 = GND, 0x49 = V+, 0x4A = ADD0, 0x4B = SCL
+	The default address of the device is 0x48. 
+*/
+uint8_t TMP117::getAddress()
+{
+	return _deviceAddress;
+}
+
+/* SET ADDRESS
+	This function calls for the user to write the address of the 
+	device with 0x48 = GND, 0x49 = V+, 0x4A = ADD0, 0x4B = SCL
+	The sensor can be used to connect up to 4 devices if the addresses
+	are called correctly (Found on Page 19, Table 2).
+	The defauly address of the device is 0x48. 
+*/
+void TMP117::setAddress(uint8_t addr)
+{
+	_deviceAddress = addr;
 }
 
 /* READ REGISTER
@@ -147,7 +149,7 @@ double TMP117::readTempC()
 /* READ TEMPERATURE FAHRENHEIT
 	This function calculates the fahrenheit reading from the
 	celsius reading initially found.
-	The device reads in celsius unless called by this function
+	The device reads in celsius unless this function is called.
 */
 double TMP117::readTempF()
 {
@@ -167,7 +169,7 @@ float TMP117::getTemperatureOffset()
 	return finalOffset;
 }
 
-/* SET OFFSET TEMPERATURE
+/* SET TEMPERATURE OFFSET
 	This function sets the offset temperature of the device. The user
 	can write to this to set any desired offset within the temperature range.
 	This writes to the register value 0x07 (TMP117_TEMP_OFFSET)
@@ -274,7 +276,8 @@ bool TMP117::getLowAlert()
 
 /* SOFTWARE RESET
 	This function performs a software reset, loading all the default
-	values into the configuration register.
+	values into the configuration register. A table of the configuration
+	register can be found on page 25 of the datasheet.
 */
 void TMP117::softReset()
 {
@@ -335,6 +338,10 @@ void TMP117::setOneShotMode()
 	This function reads the mode for the conversions, then
 	prints it to the Serial Monitor in the Arduino IDE.
 	This can be found in the datasheet on Page 25 Table 6. 
+	This function can return Continuous Conversion Mode (1),
+	Shutdown Mode (2), and One-Shot Mode (3). This should never 
+	return 4 (the other continuous conversion) since there is 
+	no function for writing to the value. 
 */
 uint8_t TMP117::getConversionMode()
 {

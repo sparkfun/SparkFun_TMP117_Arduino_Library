@@ -31,7 +31,7 @@ Distributed as-is; no warranty is given.
    - Low Power Consumption 3.5-µA, 1-Hz Conversion Cycle
 */
 
-// Address of the registers (where to look to find the information in the registers)
+// Address of the registers. This can be found on page 23 of the datasheet
 enum TMP117_Register
 {
   TMP117_TEMP_RESULT = 0X00,
