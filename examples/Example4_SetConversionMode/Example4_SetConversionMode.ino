@@ -7,7 +7,7 @@
 
   This sketch can get and set the conversion mode that the temperature sensor can be in,
   which is Continuous Conversion, Shutdown, or One-Shot. The specific values for these
-  are found below at the end of the comments section
+  are found below at the end of the comments section.
 
   Resources:
   Wire.h (included with Arduino IDE)
@@ -57,7 +57,7 @@ void setup()
   Wire.begin();
   Serial.begin(115200);    // Start serial communication at 115200 baud
   Wire.setClock(400000);   // Set clock speed to be the fastest for better communication (fast mode)
-  sensor.setAddress(0x48); // Set the address of the device - see above address comments
+  sensor.setAddress(0x48); // Set the address of the device - see above address comments for more information
 
   Serial.println("TMP117 Example 4: Setting Conversion Modes");
   if (sensor.begin() == true) // Function to check if the sensor will correctly self-identify with the proper Device ID/Address
@@ -75,7 +75,7 @@ void setup()
   Serial.println("2: Shutdown");
   Serial.println("3: One-Shot");
   Serial.print("Current Conversion Mode: ");
-  sensor.getConversionMode(); // Prints the conversion mode of the device to the Serial Monitor
+  Serial.println(sensor.getConversionMode()); // Prints the conversion mode of the device to the Serial Monitor
 }
 
 
@@ -84,14 +84,14 @@ void loop()
 {
   Serial.println("Enter your mode of Conversion (number 1 - 3): ");
   while (Serial.available() == 0); // Waits for the user input
-  byte correctMode = Serial.parseInt(); // Reads the input from the serial port
-  Serial.print("Number recieved: ");
-  Serial.println(correctMode);
-  if (correctMode == 1)
+  uint8_t convMode = Serial.parseInt(); // Reads the input from the serial port
+  Serial.print("Number received: ");
+  Serial.println(convMode);
+  if (convMode == 1)
   {
-    sensor.setContinuousConversionMode();
+    sensor.setContinuousConversionMode(); // Sets mode register value to be 0b00
     Serial.print("New Conversion Mode: ");
-    if (sensor.getConversionMode() == 0b00)
+    if (sensor.getConversionMode() == 1) 
     {
       Serial.println("Continuous Conversion");
     }
@@ -101,11 +101,11 @@ void loop()
     }
     Serial.println(); // Create a whitespace for easier readings
   }
-  else if (correctMode == 2)
+  else if (convMode == 2)
   {
-    sensor.setShutdownMode();
+    sensor.setShutdownMode(); // Sets mode register value to be 0b01
     Serial.print("New Conversion Mode: ");
-    if (sensor.getConversionMode() == 0b01)
+    if (sensor.getConversionMode() == 2)
     {
       Serial.println("Shutdown Mode");
     }
@@ -116,11 +116,11 @@ void loop()
     sensor.getConversionMode();
     Serial.println(); // Create a whitespace for easier readings
   }
-  else if (correctMode == 3)
+  else if (convMode == 3)
   {
-    sensor.setOneShotMode();
+    sensor.setOneShotMode(); // Sets mode register value to be 0b11
     Serial.print("New Conversion Mode: ");
-    if (sensor.getConversionMode() == 0b11)
+    if (sensor.getConversionMode() == 3)
     {
       Serial.println("One-Shot Mode");
     }

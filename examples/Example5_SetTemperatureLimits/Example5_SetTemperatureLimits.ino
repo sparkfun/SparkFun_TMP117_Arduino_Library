@@ -63,9 +63,9 @@ void setup()
   }
 
   Serial.print("Current Low Limit: ");
-  Serial.println(sensor.getLowLimit());
+  Serial.println(sensor.getLowLimit()); // Returns the low limit temperature in °C
   Serial.print("Current High Limit: ");
-  Serial.println(sensor.getHighLimit());
+  Serial.println(sensor.getHighLimit()); // Returns the high limit temperature in °C
 }
 
 
@@ -83,10 +83,9 @@ void loop()
     Serial.println("Please enter Low Limit Temperature (between -256°C and 255.98°C): ");
     while (Serial.available() == 0); // Waits for the user input
     lowTemp = Serial.parseFloat();
-    if ((lowTemp < -256) || (lowTemp > 255.98))
+    if ((lowTemp >= -256) && (lowTemp < 255.99)) 
     {
       sensor.setLowLimit(lowTemp);
-      delay(1000);
       Serial.print("New Low Limit (in °C): ");
       Serial.println(sensor.getLowLimit());
     }
@@ -103,10 +102,9 @@ void loop()
     Serial.println("Please enter High Limit Temperature (between -256°C and 255.98°C): ");
     while (Serial.available() == 0); // Waits for the user input
     highTemp = Serial.parseFloat(); // Reads the input from the serial port
-    if ((highTemp < -256) || (highTemp < 255.98))
+    if ((highTemp >= -256) && (highTemp < 255.99))
     {
       sensor.setHighLimit(highTemp);
-      delay(1000);
       Serial.print("New High Limit (in °C): ");
       Serial.println(sensor.getHighLimit());
     }

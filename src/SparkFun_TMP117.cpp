@@ -299,22 +299,6 @@ void TMP117::setContinuousConversionMode()
 	writeRegister(TMP117_CONFIGURATION, mode);
 }
 
-/* SET ONE SHOT MODE
-	This function sets the conversion mode of the sensor to be 
-	in one shot mode. This can be found in the datasheet on Page 
-	25 Table 6. The TMP117 defaults to Continuous Conversion Mode 
-	on reset.
-*/
-void TMP117::setOneShotMode()
-{
-	uint16_t mode = 0;
-	mode = readRegister(TMP117_CONFIGURATION); // Fills mode to be the configuration register
-
-	bitWrite(mode, 11, 1); // Sets bit 11 to 1
-	bitWrite(mode, 10, 1); // Sets bit 10 to 1
-	writeRegister(TMP117_CONFIGURATION, mode);
-}
-
 /* SET SHUTDOWN MODE
 	This function sets the conversion mode of the sensor to be 
 	in shutdown mode. This can be found in the datasheet on Page 
@@ -328,6 +312,22 @@ void TMP117::setShutdownMode()
 
 	bitClear(mode, 11);	// Clears bit 11
 	bitWrite(mode, 10, 1); // Sets bit 10 to 1
+	writeRegister(TMP117_CONFIGURATION, mode);
+}
+
+/* SET ONE SHOT MODE
+	This function sets the conversion mode of the sensor to be 
+	in one shot mode. This can be found in the datasheet on Page 
+	25 Table 6. The TMP117 defaults to Continuous Conversion Mode 
+	on reset.
+*/
+void TMP117::setOneShotMode()
+{
+	uint16_t mode = 0;
+	mode = readRegister(TMP117_CONFIGURATION); // Fills mode to be the configuration register
+
+	bitWrite(mode, 10, 1); // Sets bit 10 to 1
+	bitWrite(mode, 11, 1); // Sets bit 11 to 1
 	writeRegister(TMP117_CONFIGURATION, mode);
 }
 
@@ -346,19 +346,19 @@ uint8_t TMP117::getConversionMode()
 
 	if ((currentMode1 == 0) && (currentMode2 == 0)) // 0b00, Continuous Conversion Mode
 	{
-		return 0b00;
+		return 1; // Actually 0, but return 1 for the example sketch
 	}
 	else if ((currentMode1 == 1) && (currentMode2 == 0)) // 0b10, should not be set this
 	{
-		return 0b10;
+		return 4; // This value should never be returned
 	}
 	else if ((currentMode1 == 0) && (currentMode2 == 1)) // 0b01, Shutdown Mode
 	{
-		return 0b01;
+		return 2; // Actually 0b01, but return 2 for the example sketch
 	}
 	else if ((currentMode1 == 1) && (currentMode2 == 1)) // 0b11, One-Shot Mode
 	{
-		return 0b11;
+		return 3;
 	}
 }
 
@@ -370,27 +370,27 @@ uint8_t TMP117::getConversionMode()
 void TMP117::setConversionAverageMode(uint8_t convMode)
 {
 	uint16_t mode = 0;
-	mode = readRegister(TMP117_CONFIGURATION); // Fills in time to be the config register
+	mode = readRegister(TMP117_CONFIGURATION); // Fills to be the config register
 
-	if (convMode == 1) // No Averaging
+	if (convMode == 0) // No Averaging, 0b00
 	{
 		bitClear(mode, 5); // Clears bit 5
 		bitClear(mode, 6); // Clears bit 6
 		writeRegister(TMP117_CONFIGURATION, mode);
 	}
-	else if (convMode == 2) // 8 Averaged Conversions
+	else if (convMode == 1) // 8 Averaged Conversions, 0b01
 	{
 		bitClear(mode, 6);	// Clears bit 6
 		bitWrite(mode, 5, 1); // Sets bit 5 to be 1
 		writeRegister(TMP117_CONFIGURATION, mode);
 	}
-	else if (convMode == 3) // 32 Averaged Conversions
+	else if (convMode == 2) // 32 Averaged Conversions, 0b10
 	{
 		bitWrite(mode, 6, 1); // Sets bit 6 to be 1
 		bitClear(mode, 5);	// Clears bit 5
 		writeRegister(TMP117_CONFIGURATION, mode);
 	}
-	else if (convMode == 4) // 64 Averaged Conversions
+	else if (convMode == 3) // 64 Averaged Conversions, 0b11
 	{
 		bitWrite(mode, 6, 1); // Sets bit 6 to be 1
 		bitWrite(mode, 5, 1); // Sets bit 5 to be 1
@@ -455,9 +455,9 @@ void TMP117::setConversionCycleBit(uint8_t convTime)
 
 	if (convTime == 0) // 0b000
 	{
-		bitClear(mode, 9); // Clears bit 7
+		bitClear(mode, 9); // Clears bit 9
 		bitClear(mode, 8); // Clears bit 8
-		bitClear(mode, 7); // Clears bit 9
+		bitClear(mode, 7); // Clears bit 7
 		writeRegister(TMP117_CONFIGURATION, mode);
 	}
 	else if (convTime == 1) // 0b001
@@ -483,7 +483,7 @@ void TMP117::setConversionCycleBit(uint8_t convTime)
 	}
 	else if (convTime == 4) // 0b100
 	{
-		bitWrite(mode, 9, 1); // Sets bit 6 to be 1
+		bitWrite(mode, 9, 1); // Sets bit 9 to be 1
 		bitClear(mode, 8);	// Clears bit 8
 		bitClear(mode, 7);	// Clears bit 7
 		writeRegister(TMP117_CONFIGURATION, mode);
@@ -534,8 +534,8 @@ uint8_t TMP117::getConversionCycleBit()
 	uint16_t configReg = 0;
 	configReg = readRegister(TMP117_CONFIGURATION); // Fills configReg with config register values
 
-	uint8_t currentTime9 = bitRead(configReg, 6); // Left most bit (9)
-	uint8_t currentTime8 = bitRead(configReg, 5); // Middle bit (8)
+	uint8_t currentTime9 = bitRead(configReg, 9); // Left most bit (9)
+	uint8_t currentTime8 = bitRead(configReg, 8); // Middle bit (8)
 	uint8_t currentTime7 = bitRead(configReg, 7); // Right most bit (7)
 
 	if ((currentTime9 == 0) && (currentTime8 == 0) && (currentTime7 == 0)) // 0b000

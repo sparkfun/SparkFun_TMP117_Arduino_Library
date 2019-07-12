@@ -52,7 +52,7 @@ void setup()
   sensor.setAddress(0x48); // Set the address of the device - see above address comments for other addresses for the device
 
   Serial.println("TMP117 Example 3: Set Temperature Offset Value");
-  if (sensor.begin() == true)
+  if (sensor.begin() == true) // Function to check if the sensor will correctly self-identify with the proper Device ID/Address
   {
     Serial.println("Begin");
   }
@@ -69,28 +69,28 @@ void setup()
 
 
 // For function to work properly, make sure the Serial Monitor is set to "No Line Ending"
-// The temperature offset function will not work if set outside the sensors bounds of +/- 256°C
+// The temperature offset function will not work if set outside the sensors bounds of +/- 255.98°C
 void loop()
 {
-  if (sensor.dataReady() == true)
+  float tempOffset = 0;
+  if (sensor.dataReady() == true)  // Only prints when there is data ready from the temperature sensor
   {
-    float tempOffset = 0;
     Serial.print("Enter new temperature offset (in °C): ");
     while (Serial.available() == 0); // Waits for the user input
     tempOffset = Serial.parseFloat(); // Reads the input from the serial port, adds 1 for precision
     Serial.println(tempOffset);
-    if (tempOffset > 256 || tempOffset < -256)
+    if (tempOffset > 255.98 || tempOffset < -255.98)
     {
-      Serial.println("Please enter a number within the range of +/- 256 °C");
+      Serial.println("Please enter a number within the range of +/-255.98°C");
       Serial.println();
     }
     else
     {
-      sensor.setTemperatureOffset(tempOffset);
+      sensor.setTemperatureOffset(tempOffset); // Write to the temperature offset register
       delay(1000); // Delay for conversion to successfully work
       Serial.println(); // Create a new line after each run of the loop
       Serial.print("New Offset Temperature: ");
-      Serial.print(sensor.getTemperatureOffset());
+      Serial.print(sensor.getTemperatureOffset()); // Print the new temperature offset
       Serial.println("°C");
       Serial.print("Temperature with Offset: ");
       Serial.print(sensor.readTempC());

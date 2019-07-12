@@ -6,7 +6,8 @@
   ~
 
   This sketch configures the TMP117 temperature sensor and prints the
-  temperature in degrees celsius and fahrenheit.
+  temperature in degrees celsius and fahrenheit with a 500ms delay for
+  easier readings. 
 
   Resources:
   Wire.h (included with Arduino IDE)
@@ -51,26 +52,25 @@ void setup()
   sensor.setAddress(0x48); // Set the address of the device - see above address comments
 
   Serial.println("TMP117 Example 1: Basic Readings");
-  if (sensor.begin() == true)
+  if (sensor.begin() == true) // Function to check if the sensor will correctly self-identify with the proper Device ID/Address
   {
     Serial.println("Begin");
   }
   else
   {
     Serial.println("Device failed to setup.");
-    while (1)
-      ;
+    while (1);
   }
 }
 
 void loop()
 {
-  // Data Ready is primarily for a flag for the conversion modes - in continous conversion the dataReady flag should always be high
+  // Data Ready is a flag for the conversion modes - in continous conversion the dataReady flag should always be high
   if (sensor.dataReady() == true) // Function to make sure that there is data ready to be printed, only prints temperature values when data is ready
   {
     float tempC = sensor.readTempC();
     float tempF = sensor.readTempF();
-    // Print temperature in C and F
+    // Print temperature in °C and °F
     Serial.println(); // Create a white space for easier viewing
     Serial.print("Temperature in Celsius: ");
     Serial.println(tempC);

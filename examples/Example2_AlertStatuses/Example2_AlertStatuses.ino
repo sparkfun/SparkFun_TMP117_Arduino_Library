@@ -52,7 +52,7 @@ void setup()
   sensor.setAddress(0x48); // Set the address of the device - see above address comments
 
   Serial.println("TMP117 Example 2: Alert Statuses");
-  if (sensor.begin() == true)
+  if (sensor.begin() == true) // Function to check if the sensor will correctly self-identify with the proper Device ID/Address
   {
     Serial.println("Begin");
   }
@@ -68,7 +68,8 @@ void setup()
 void loop()
 {
   Serial.print("Current Temperature: ");
-  Serial.println(sensor.readTempC());
+  Serial.print(sensor.readTempC());
+  Serial.println("°C");
   if(sensor.getHighAlert() == true)
   {
     Serial.println("High Alert");
