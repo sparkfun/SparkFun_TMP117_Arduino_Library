@@ -37,148 +37,96 @@ Distributed as-is; no warranty is given.
 #include "SparkFun_TMP117.h"
 
 /* CONSTRUCTOR
-    This function, called when you initialize the class will write 
-    the variable address into a private variable for future use. 
-    The initial variable address should be 0x48. 
+    This function will use the main I2C port on the Arduino 
+	by default, but this is configurable with the setBus function.
+	This needs to be called when running the example sketches to
+	initialize the sensor and be able to call to the library. 
 */
-TMP117::TMP117(byte address)
+TMP117::TMP117(TwoWire &wirePort)
 {
-	_address = address;
-	alert_type = NOALERT;
+	_i2cPort = &wirePort;
+}
+
+/* BEGIN
+    This function checks if the TMP will ACK over I2C, and
+	if the TMP will correctly self-identify with the proper
+	device ID. Returns true if both checks pass.
+*/
+bool TMP117::begin()
+{
+	//make sure the TMP will acknowledge over I2C
+	_i2cPort->beginTransmission(_deviceAddress);
+	if (_i2cPort->endTransmission() != 0)
+	{
+		return false;
+	}
+
+	uint16_t deviceID = readRegister(TMP117_DEVICE_ID); // reads registers into rawData
+
+	//make sure the device ID reported by the TMP is correct
+	//should always be 0x0117
+	if (deviceID != DEVICE_ID_VALUE)
+	{
+		return false;
+	}
+
+	return true; //returns true if all the checks pass
 }
 
 /* GET ADDRESS
 	This function calls for the current address of the device to be
 	set up. The addresses are 0x48 = GND, 0x49 = V+, 0x4A = ADD0, 0x4B = SCL
+	The default address of the device is 0x48. 
 */
 uint8_t TMP117::getAddress()
 {
-	return TMP117_I2C_ADDR;
+	return _deviceAddress;
 }
 
 /* SET ADDRESS
 	This function calls for the user to write the address of the 
 	device with 0x48 = GND, 0x49 = V+, 0x4A = ADD0, 0x4B = SCL
 	The sensor can be used to connect up to 4 devices if the addresses
-	are called correctly (Found on Page 19, Table 2)
+	are called correctly (Found on Page 19, Table 2).
+	The defauly address of the device is 0x48. 
 */
 void TMP117::setAddress(uint8_t addr)
 {
-	addr = TMP117_I2C_ADDR;
-}
-
-/* BEGIN INITIALIZATION
-    This function initalizes the TMP117 sensor and opens up the registers.
-	This returns true when it was successfully set up and false otherwise.
-*/
-bool TMP117::begin(TwoWire &wirePort, uint8_t deviceAddress)
-{
-	// Set device address and wire port to private variable
-	_address = deviceAddress;
-	_i2cPort = &wirePort;
-	byte rawData[2]; // Array created for values needed to be returned in for shifting
-	int16_t digitalTempC = 0;
-	if (isConnected() == false) // Returns false when not able to be connected
-	{
-		return false;
-	}
-
-	readRegisters(TMP117_DEVICE_ID, rawData, 2); // Calls to read registers to pull all the bits to store in an array
-	int16_t deviceID = 0;						 // send to other function to get actual device id value
-	byte MSB = rawData[0];
-	byte LSB = rawData[1];
-	deviceID = (MSB << 8) | (LSB & 0xFF); // Must be signed
-
-	// DEVICE_ID should always be 0x0117
-	// Checks to see if properly connected
-	if (deviceID != DEVICE_ID_VALUE)
-	{
-		return false;
-	}
-
-	return true; // Returns true when all the checks are passed
-}
-
-/* IS CONNECTED
-	This function returns true if the I2C Device acknowledges a connection.
-    Otherwise returns false.
-*/
-bool TMP117::isConnected()
-{
-	_i2cPort->beginTransmission((uint8_t)_address);
-	if (_i2cPort->endTransmission() == 0)
-	{
-		return (true);
-	}
-	else
-	{
-		Serial.println("Device unable to connect.");
-		return (false);
-	}
+	_deviceAddress = addr;
 }
 
 /* READ REGISTER
 	This function reads the register bytes from the sensor when called upon.
+	This reads 2 bytes of information from the 16-bit registers. 
 */
-uint16_t TMP117::readRegister(TMP117_Register reg)
+uint16_t TMP117::readRegister(uint8_t reg) // originally TMP117_Register reg
 {
-	_i2cPort->beginTransmission((uint8_t)_address);
+	_i2cPort->beginTransmission(_deviceAddress); // Originally cast (uint8_t)
 	_i2cPort->write(reg);
-	_i2cPort->endTransmission(false);			 // endTransmission but keep the connection active
-	_i2cPort->requestFrom(_address, (uint8_t)2); // Ask for 2 bytes, once done, bus is released by default
+	_i2cPort->endTransmission();					   // endTransmission but keep the connection active
+	_i2cPort->requestFrom(_deviceAddress, (uint8_t)2); // Ask for 2 bytes, once done, bus is released by default
 
-	// Wait for the data to come back
-	if (_i2cPort->available())
+	uint8_t data[2] = {0};	 // Declares an array of length 2 to be empty
+	int16_t datac = 0;		   // Declares the return variable to be 0
+	if (Wire.available() <= 2) // Won't read more than 2 bits
 	{
-		uint16_t response = _i2cPort->read() << 8; //Big endian (MSB)
-		response |= _i2cPort->read();
-		return response;
+		data[0] = Wire.read();				// Reads the first set of bits (D15-D8)
+		data[1] = Wire.read();				// Reads the second set of bits (D7-D0)
+		datac = ((data[0] << 8) | data[1]); // Swap the LSB and the MSB
 	}
-	else
-	{
-		return 0;
-	}
+	return datac;
 }
 
-/* READ MULTIPLE REGISTERS
-    Read "en" bytes from the TMP117, starting at register "reg." Bytes are 
-    stored in "buffer" on exit.
+/* WRITE REGISTER
+    Wire data to a TMP117 register
 */
-void TMP117::readRegisters(TMP117_Register reg, byte *buffer, byte len)
+void TMP117::writeRegister(uint8_t reg, uint16_t data) // originally TMP117_Register reg
 {
-	_i2cPort->beginTransmission(_address);
+	_i2cPort->beginTransmission(_deviceAddress); // Originally cast uint8_t when a register value again
 	_i2cPort->write(reg);
-	_i2cPort->endTransmission(false);	 // endTransmission but keep the connection active
-	_i2cPort->requestFrom(_address, len); // Ask for bytes, once done, bus is released by default
-
-	// Wait for data to come back
-	if (_i2cPort->available() == len)
-	{
-		// Iterate through data from buffer
-		for (uint8_t i = 0; i < len; i++)
-			buffer[i] = _i2cPort->read();
-	}
-}
-
-/* WRITE TO MULTIPLE REGISTERS
-	Write an array of "len" bytes ("buffer"), starting at register "reg,"
-    and auto-incrementing to the next.
-*/
-void TMP117::writeRegisters(TMP117_Register reg, byte *buffer, byte len)
-{
-	_i2cPort->beginTransmission((uint8_t)_address);
-	_i2cPort->write(reg);
-	for (int i = 0; i < len; i++) // Loop to run through all the bits requested
-		_i2cPort->write(buffer[i]);
-	_i2cPort->endTransmission(); // Stop transmitting
-}
-
-/* WRITE TO A SINGLE REGISTER
-    Wire a single bit of data to a register in TMP117.
-*/
-void TMP117::writeRegister(TMP117_Register reg, byte data)
-{
-	writeRegisters(reg, &data, 1); // Only calls to write to one byte in the register
+	_i2cPort->write(highByte(data)); // Write MSB (D15-D8)
+	_i2cPort->write(lowByte(data));  // Write LSB (D7-D0)
+	_i2cPort->endTransmission();	 // Stop transmitting data
 }
 
 /* READ TEMPERATURE CELSIUS
@@ -189,14 +137,10 @@ void TMP117::writeRegister(TMP117_Register reg, byte data)
 	value of the binary number being read will be negative if the MSB is 1,
 	and positive if the bit is 0. 
 */
-float TMP117::readTempC()
+double TMP117::readTempC()
 {
-	byte rawData[2] = {0}; // Sets the array of rawData equal to 0 initially
-	int16_t digitalTempC = 0;
-	readRegisters(TMP117_TEMP_RESULT, rawData, 2); // Calls to read registers to pull all the bits to store in an array
-	byte MSB = rawData[0];
-	byte LSB = rawData[1];
-	digitalTempC = (MSB << 8) | (LSB & 0xFF);			 // Must be unsigned
+	int16_t digitalTempC = readRegister(TMP117_TEMP_RESULT); // Calls to read registers to pull all the bits to store in an array
+
 	float finalTempC = digitalTempC * TMP117_RESOLUTION; // Multiplies by the resolution for digital to final temp
 
 	return finalTempC;
@@ -205,161 +149,435 @@ float TMP117::readTempC()
 /* READ TEMPERATURE FAHRENHEIT
 	This function calculates the fahrenheit reading from the
 	celsius reading initially found.
-	The device reads in celsius unless called by this function
+	The device reads in celsius unless this function is called.
 */
-float TMP117::readTempF()
+double TMP117::readTempF()
 {
-	return readTempC() * 9.0 / 5.0 + 32.0;
+	return readTempC() * 9.0 / 5.0 + 32.0; // Conversion from °C to °F
 }
 
 /* GET TEMPERATURE OFFSET
 	This function reads the temperature offset. This reads from the register
-	value 0x07 (TMP117_TEMP_OFFSET)
+	value 0x07 (TMP117_TEMP_OFFSET). This can be found on page 23 of the 
+	datasheet. 
 */
-float TMP117::getTemperatureOffset() // Reads the temperature offset
+float TMP117::getTemperatureOffset()
 {
-	byte rawData[2];
-	readRegisters(TMP117_TEMP_OFFSET, rawData, 2); // Calls to read registers to pull all the bits to store in an array
-	byte MSB = rawData[0];
-	byte LSB = rawData[1];
-	uint16_t unsignedValue = (MSB << 8) | (LSB & 0xFF); // Must be unsigned
-	int16_t finalOffset = unsignedValue * TMP117_RESOLUTION;
+	int16_t _offset = 0;
+	_offset = readRegister(TMP117_TEMP_OFFSET);				// Reads from the temperature offset register
+	float finalOffset = (float)_offset * TMP117_RESOLUTION; // Multiplies by the resolution for correct offset temperature
 	return finalOffset;
 }
 
-/* SET OFFSET TEMPERATURE
+/* SET TEMPERATURE OFFSET
 	This function sets the offset temperature of the device. The user
 	can write to this to set any desired offset within the temperature range.
 	This writes to the register value 0x07 (TMP117_TEMP_OFFSET)
 */
-void TMP117::setTemperatureOffset(uint16_t offset)
+void TMP117::setTemperatureOffset(float offset)
 {
-	CONFIGURATION_REG reg;
-	reg.CONFIGURATION_COMBINED = offset;
-	writeRegister(TMP117_CONFIGURATION, reg.CONFIGURATION_COMBINED);
+	int16_t resolutionOffset = offset / TMP117_RESOLUTION; // Divides by the resolution to send the correct value to the sensor
+	writeRegister(TMP117_TEMP_OFFSET, resolutionOffset);   // Writes to the offset temperature register with the new offset value
 }
 
-/* GET ALERT
-	This function returns the type of the alert being caused.
-	Alerts are NOALERT, HIGHALERT, and LOWALERT.
+/* GET LOW LIMIT
+	This function reads the low limit register that is set by the user.
+	The values are signed integers since they can be negative.
 */
-TMP117_ALERT TMP117::getAlert()
+float TMP117::getLowLimit()
 {
-	return alert_type;
+	int16_t lowLimit = 0;
+	lowLimit = readRegister(TMP117_T_LOW_LIMIT);			// Calls to read register to pull all the bits to store in a variable
+	float finalLimit = (float)lowLimit * TMP117_RESOLUTION; // Multiplies by the resolution for correct offset temperature
+	return finalLimit;
+}
+
+/* SET LOW LIMIT
+	This function allows the user to set the low limit register to whatever
+	specified value, as long as in the range for the temperature sensor. This
+	function can be used as a threshold for Therm mode and or Alert mode.
+	The values are signed integers since they can be negative.
+*/
+void TMP117::setLowLimit(float lowLimit)
+{
+	int16_t finalLimit = lowLimit / TMP117_RESOLUTION; // Divides by the resolution to send the correct value to the sensor
+	writeRegister(TMP117_T_LOW_LIMIT, finalLimit);	 // Writes to the low limit temperature register with the new limit value
+}
+
+/* GET HIGH LIMIT
+	This function reads the high limit register that is set by the user.
+	The values are signed integers since they can be negative.
+*/
+float TMP117::getHighLimit()
+{
+	int16_t highLimit = 0;
+	highLimit = readRegister(TMP117_T_HIGH_LIMIT);			 // Calls to read registers to pull all the bits to store in an array
+	float finalLimit = (float)highLimit * TMP117_RESOLUTION; // Multiplies by the resolution for correct offset temperature
+	return finalLimit;
+}
+
+/* SET HIGH LIMIT
+	This function allows the user to set the high limit register to whatever
+	specified value, as long as in the range for the temperature sensor. This
+	function can be used as a threshold for Therm mode and or Alert mode
+	The values are signed integers since they can be negative.
+*/
+void TMP117::setHighLimit(float highLimit)
+{
+	int16_t finalLimit = highLimit / TMP117_RESOLUTION; // Divides by the resolution to send the correct value to the sensor
+	writeRegister(TMP117_T_HIGH_LIMIT, finalLimit);		// Writes to the high limit temperature register with the new limit value
+}
+
+/*GET HIGH ALERT
+	This function reads the 15th bit of the configuration register to 
+	tell if the conversion result is higher than the high limit. This
+	is set as a High Alert flag. This can be found on page 25 of the 
+	datasheet.
+*/
+bool TMP117::getHighAlert()
+{
+	uint16_t configReg = 0;
+	configReg = readRegister(TMP117_CONFIGURATION);
+
+	uint8_t highAlert = bitRead(configReg, 15); // Fills with the 15th bit of the configuration register
+
+	if (highAlert == 1)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+/*GET LOW ALERT
+	This function reads the 14th bit of the configuration register to 
+	tell if the conversion result is lower than the low limit. This
+	is set as a Low Alert flag. This can be found on page 25 of the 
+	datasheet.
+*/
+bool TMP117::getLowAlert()
+{
+	uint16_t configReg = 0;
+	configReg = readRegister(TMP117_CONFIGURATION);
+
+	uint8_t lowAlert = bitRead(configReg, 14); // Fills with the 14th bit of the configuration register
+
+	if (lowAlert == 1)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 /* SOFTWARE RESET
 	This function performs a software reset, loading all the default
-	values into the configuration register. This uses the struct in 
-	the SparkFun_TMP117.h file.
+	values into the configuration register. A table of the configuration
+	register can be found on page 25 of the datasheet.
 */
 void TMP117::softReset()
 {
-	CONFIGURATION_REG reg;
-	reg.CONFIGURATION_COMBINED = readRegister(TMP117_CONFIGURATION);
-	reg.CONFIGURATION_FIELDS.SOFT_RESET = 0b1;
-	// Writes to the register to be 1 when this function is called upon
-	writeRegister(TMP117_CONFIGURATION, reg.CONFIGURATION_FIELDS.SOFT_RESET);
+	uint16_t reset = 0;
+	reset = readRegister(TMP117_CONFIGURATION); // Fills mode to be the configuration register
+	bitWrite(reset, 1, 1);
+	writeRegister(TMP117_CONFIGURATION, reset);
 }
 
-/* SET CONVERSION MODE
-	This function writes the mode for the conversions.
-	This can be found in the datasheet on Page 25 Table 6.
-	Currently set in Continuous Conversion Mode.
+/* SET CONTINUOUS CONVERSION MODE
+	This function sets the conversion mode of the sensor to be 
+	continuous. This can be found in the datasheet on Page 25 Table 6.
+	The TMP117 defaults to Continuous Conversion Mode on reset.
 */
-void TMP117::setConversionMode(uint8_t cycle)
+void TMP117::setContinuousConversionMode()
 {
-	CONFIGURATION_REG reg;
-	reg.CONFIGURATION_COMBINED = cycle;
-	if (cycle == 0)
-	{
-		writeRegister(TMP117_CONFIGURATION, 0b00);
-	}
-	else if (cycle == 1)
-	{
-		writeRegister(TMP117_CONFIGURATION, 0b01);
-	}
-	else if (cycle == 2)
-	{
-		writeRegister(TMP117_CONFIGURATION, 0b10);
-	}
-	else if (cycle == 3)
-	{
-		writeRegister(TMP117_CONFIGURATION, 0b11);
-	}
+	uint16_t mode = 0;
+	mode = readRegister(TMP117_CONFIGURATION); // Fills mode to be the configuration register
+
+	bitClear(mode, 10); // Clears bit 10
+	bitClear(mode, 11); // Clears bit 11
+	writeRegister(TMP117_CONFIGURATION, mode);
+}
+
+/* SET SHUTDOWN MODE
+	This function sets the conversion mode of the sensor to be 
+	in shutdown mode. This can be found in the datasheet on Page 
+	25 Table 6. The TMP117 defaults to Continuous Conversion Mode 
+	on reset.
+*/
+void TMP117::setShutdownMode()
+{
+	uint16_t mode = 0;
+	mode = readRegister(TMP117_CONFIGURATION); // Fills mode to be the configuration register
+
+	bitClear(mode, 11);	// Clears bit 11
+	bitWrite(mode, 10, 1); // Sets bit 10 to 1
+	writeRegister(TMP117_CONFIGURATION, mode);
+}
+
+/* SET ONE SHOT MODE
+	This function sets the conversion mode of the sensor to be 
+	in one shot mode. This can be found in the datasheet on Page 
+	25 Table 6. The TMP117 defaults to Continuous Conversion Mode 
+	on reset.
+*/
+void TMP117::setOneShotMode()
+{
+	uint16_t mode = 0;
+	mode = readRegister(TMP117_CONFIGURATION); // Fills mode to be the configuration register
+
+	bitWrite(mode, 10, 1); // Sets bit 10 to 1
+	bitWrite(mode, 11, 1); // Sets bit 11 to 1
+	writeRegister(TMP117_CONFIGURATION, mode);
 }
 
 /* GET CONVERSION MODE
 	This function reads the mode for the conversions, then
-	prints it to the Serial Monitor in the Arduino IDE
+	prints it to the Serial Monitor in the Arduino IDE.
 	This can be found in the datasheet on Page 25 Table 6. 
+	This function can return Continuous Conversion Mode (1),
+	Shutdown Mode (2), and One-Shot Mode (3). This should never 
+	return 4 (the other continuous conversion) since there is 
+	no function for writing to the value. 
 */
 uint8_t TMP117::getConversionMode()
 {
-	CONFIGURATION_REG reg;
-	reg.CONFIGURATION_COMBINED = readRegister(TMP117_CONFIGURATION);
-	uint8_t mode = reg.CONFIGURATION_FIELDS.MOD; // Stores the information from the MOD register
-	return mode;
+	uint16_t configReg = 0;
+	configReg = readRegister(TMP117_CONFIGURATION); // Fill configReg with the configuration register
+
+	uint8_t currentMode1 = bitRead(configReg, 11); // Left most conversion bit
+	uint8_t currentMode2 = bitRead(configReg, 10); // Right most conversion bit
+
+	if ((currentMode1 == 0) && (currentMode2 == 0)) // 0b00, Continuous Conversion Mode
+	{
+		return 1; // Actually 0, but return 1 for the example sketch
+	}
+	else if ((currentMode1 == 1) && (currentMode2 == 0)) // 0b10, should not be set this
+	{
+		return 4; // This value should never be returned
+	}
+	else if ((currentMode1 == 0) && (currentMode2 == 1)) // 0b01, Shutdown Mode
+	{
+		return 2; // Actually 0b01, but return 2 for the example sketch
+	}
+	else if ((currentMode1 == 1) && (currentMode2 == 1)) // 0b11, One-Shot Mode
+	{
+		return 3;
+	}
 }
 
-/* GET CONVERSION CYCLE TIME
-	This function gets the conversion cycle time of the device.
-	This only works in Continuous Conversion mode, which was set 
-	in the above function
-*/
-uint8_t TMP117::getConversionCycleTime()
+/*SET CONVERSION AVERAGE MODE 
+	This function sets the conversion averaging mode of the device
+	when in Continuous Conversion Mode. This can be found on page 
+	25 of the TMP117 datasheet. 
+ */
+void TMP117::setConversionAverageMode(uint8_t convMode)
 {
-	CONFIGURATION_REG reg;
-	reg.CONFIGURATION_COMBINED = readRegister(TMP117_CONFIGURATION);
-	// reg.CONFIGURATION_FIELDS.CONV = 0b000;
-	uint8_t cycle = reg.CONFIGURATION_FIELDS.CONV;
-	return cycle;
+	uint16_t mode = 0;
+	mode = readRegister(TMP117_CONFIGURATION); // Fills to be the config register
+
+	if (convMode == 0) // No Averaging, 0b00
+	{
+		bitClear(mode, 5); // Clears bit 5
+		bitClear(mode, 6); // Clears bit 6
+		writeRegister(TMP117_CONFIGURATION, mode);
+	}
+	else if (convMode == 1) // 8 Averaged Conversions, 0b01
+	{
+		bitClear(mode, 6);	// Clears bit 6
+		bitWrite(mode, 5, 1); // Sets bit 5 to be 1
+		writeRegister(TMP117_CONFIGURATION, mode);
+	}
+	else if (convMode == 2) // 32 Averaged Conversions, 0b10
+	{
+		bitWrite(mode, 6, 1); // Sets bit 6 to be 1
+		bitClear(mode, 5);	// Clears bit 5
+		writeRegister(TMP117_CONFIGURATION, mode);
+	}
+	else if (convMode == 3) // 64 Averaged Conversions, 0b11
+	{
+		bitWrite(mode, 6, 1); // Sets bit 6 to be 1
+		bitWrite(mode, 5, 1); // Sets bit 5 to be 1
+		writeRegister(TMP117_CONFIGURATION, mode);
+	}
 }
 
-/* SET CONVERSION CYCLE TIME
-	This function sets the conversion cycle time of the device.
-	This only works in Continuous Conversion mode, which was set 
-	in an above function
-*/
-void TMP117::setConversionCycleTime(uint8_t cycle)
+/*GET CONVERSION AVERAGE MODE
+	This function reads for the averaging mode of the conversions, 
+	then prints it to the Serial Monitor in the Arduino IDE.
+	This can be found in the datasheet on Page 25 Table 6.
+ */
+uint8_t TMP117::getConversionAverageMode()
 {
-	CONFIGURATION_REG reg;
-	reg.CONFIGURATION_COMBINED = readRegister(TMP117_CONFIGURATION);
-	reg.CONFIGURATION_FIELDS.CONV = 0b000;
-	// uint8_t cycle = reg.CONFIGURATION_FIELDS.CONV;
-	writeRegister(TMP117_CONFIGURATION, reg.CONFIGURATION_COMBINED);
+	uint16_t configReg = 0;
+	configReg = readRegister(TMP117_CONFIGURATION); // Fills configReg with config register values
 
-	// There is a chart of the conversion cycle times in the SparkFun_TMP117_Registers.h file
-	// They can also be found in Table 7 on Page 26 of the datasheet
+	uint8_t currentMode6 = bitRead(configReg, 6); // Left most averaging bit
+	uint8_t currentMode5 = bitRead(configReg, 5); // Right most averaging bit
+
+	if ((currentMode6 == 0) && (currentMode5 == 0)) // 0b00, no averaging
+	{
+		return 0b00;
+	}
+	else if ((currentMode6 == 0) && (currentMode5 == 1)) // 0b01, 8 averaged conversions
+	{
+		return 0b01;
+	}
+	else if ((currentMode6 == 1) && (currentMode5 == 0)) // 0b10, 32 averaged conversions
+	{
+		return 0b10;
+	}
+	else if ((currentMode6 == 1) && (currentMode5 == 1)) // 0b11, 64 averaged conversions
+	{
+		return 0b11;
+	}
 }
 
-/* UNSIGNED WRITE REGISTER 16
-	This function is used for converting all the values that have
-	been read in 8 bit format to a 16 bit value.
-	The functions getTemperatureOffset(), readTempC() call this.
-*/
-// uint16_t TMP117::unsignedWriteRegister16(byte rawData[2])
-// {
-// 	byte rawData[2];
-// 	byte MSB = rawData[0];
-// 	byte LSB = rawData[1];
-// 	uint16_t unsignedValue = (MSB << 8) | (LSB & 0xFF); // Must be unsigned
-// 	return unsignedValue;
-// }
+/* SET CONVERSION CYCLE BIT
+	This function sets the conversion cycle time bit in 
+	Continuous Conversion mode. The times for the conversions
+	can be found below or in the datasheet on Page 25 Table
+	6 or on Page 27 Table 7. The user puts in 0-7 and it will
+	return the cycle time accoring to the values in the chart.
 
-/* SIGNED WRITE REGISTER 16
-	This function is used for converting all the values that have
-	been read in 8 bit format to a 16 bit value.
-	The function begin() calls this.
+ 	  Conversion Cycle Time in CC Mode (found on the datasheet page 26 table 6)
+               AVG       0       1       2       3
+       CONV  averaging  (0)     (8)     (32)   (64)
+         0             15.5ms  125ms   500ms    1s     
+         1             125ms   125ms   500ms    1s     
+         2             250ms   250ms   500ms    1s     
+         3             500ms   500ms   500ms    1s     
+         4             1s      1s      1s       1s     
+         5             4s      4s      4s       4s     
+         6             8s      8s      8s       8s     
+         7             16s     16s     16s      16s    
+ */
+void TMP117::setConversionCycleBit(uint8_t convTime)
+{
+	uint16_t mode = 0;
+	mode = readRegister(TMP117_CONFIGURATION); // Fills in time to be the config register
+
+	if (convTime == 0) // 0b000
+	{
+		bitClear(mode, 9); // Clears bit 9
+		bitClear(mode, 8); // Clears bit 8
+		bitClear(mode, 7); // Clears bit 7
+		writeRegister(TMP117_CONFIGURATION, mode);
+	}
+	else if (convTime == 1) // 0b001
+	{
+		bitClear(mode, 9);	// Clears bit 9
+		bitClear(mode, 8);	// Clears bit 8
+		bitWrite(mode, 7, 1); // Sets bit 7 to be 1
+		writeRegister(TMP117_CONFIGURATION, mode);
+	}
+	else if (convTime == 2) // 0b010
+	{
+		bitClear(mode, 9);	// Clears bit 9
+		bitWrite(mode, 8, 1); // Sets bit 8 to be 1
+		bitClear(mode, 7);	// Clears bit 7
+		writeRegister(TMP117_CONFIGURATION, mode);
+	}
+	else if (convTime == 3) // 0b011
+	{
+		bitClear(mode, 9);	// Clears bit 9
+		bitWrite(mode, 8, 1); // Sets bit 8 to be 1
+		bitWrite(mode, 7, 1); // Sets bit 7 to be 1
+		writeRegister(TMP117_CONFIGURATION, mode);
+	}
+	else if (convTime == 4) // 0b100
+	{
+		bitWrite(mode, 9, 1); // Sets bit 9 to be 1
+		bitClear(mode, 8);	// Clears bit 8
+		bitClear(mode, 7);	// Clears bit 7
+		writeRegister(TMP117_CONFIGURATION, mode);
+	}
+	else if (convTime == 5) // 0b101
+	{
+		bitWrite(mode, 9, 1); // Sets bit 9 to be 1
+		bitClear(mode, 8);	// Clears bit 8
+		bitWrite(mode, 7, 1); // Sets bit 7 to be 1
+		writeRegister(TMP117_CONFIGURATION, mode);
+	}
+	else if (convTime == 6) // 0b110
+	{
+		bitWrite(mode, 9, 1); // Sets bit 9 to be 1
+		bitWrite(mode, 8, 1); // Sets bit 8 to be 1
+		bitClear(mode, 7);	// Clears bit 7
+		writeRegister(TMP117_CONFIGURATION, mode);
+	}
+	else if (convTime == 7) // 0b111
+	{
+		bitWrite(mode, 9, 1); // Sets bit 9 to be 1
+		bitWrite(mode, 8, 1); // Sets bit 8 to be 1
+		bitWrite(mode, 7, 1); // Sets bit 7 to be 1
+		writeRegister(TMP117_CONFIGURATION, mode);
+	}
+}
+
+/* GET CONVERSION CYCLE BIT
+	This function returns the Conversion Cycle Bit value that the 
+	device is currently in at the time. This bit can help determine
+	the conversion cycle time that the device is in while being in
+	continuous conversion mode. 
+
+ 	  Conversion Cycle Time in CC Mode (found on the datasheet page 26 table 6)
+               AVG       0       1       2       3
+       CONV  averaging  (0)     (8)     (32)   (64)
+         0             15.5ms  125ms   500ms    1s     
+         1             125ms   125ms   500ms    1s     
+         2             250ms   250ms   500ms    1s     
+         3             500ms   500ms   500ms    1s     
+         4             1s      1s      1s       1s     
+         5             4s      4s      4s       4s     
+         6             8s      8s      8s       8s     
+         7             16s     16s     16s      16s    
 */
-// int16_t TMP117::signedWriteRegister16(byte rawData[2])
-// {
-// 	byte rawData[2];
-// 	byte MSB = rawData[0];
-// 	byte LSB = rawData[1];
-// 	int16_t signedValue = (MSB << 8) | (LSB & 0xFF); // Must be signed
-// 	return signedValue;
-// }
+uint8_t TMP117::getConversionCycleBit()
+{
+	uint16_t configReg = 0;
+	configReg = readRegister(TMP117_CONFIGURATION); // Fills configReg with config register values
+
+	uint8_t currentTime9 = bitRead(configReg, 9); // Left most bit (9)
+	uint8_t currentTime8 = bitRead(configReg, 8); // Middle bit (8)
+	uint8_t currentTime7 = bitRead(configReg, 7); // Right most bit (7)
+
+	if ((currentTime9 == 0) && (currentTime8 == 0) && (currentTime7 == 0)) // 0b000
+	{
+		return 0b000;
+	}
+	else if ((currentTime9 == 0) && (currentTime8 == 0) && (currentTime7 == 1)) // 0b001
+	{
+		return 0b001;
+	}
+	else if ((currentTime9 == 0) && (currentTime8 == 1) && (currentTime7 == 0)) // 0b010
+	{
+		return 0b010;
+	}
+	else if ((currentTime9 == 0) && (currentTime8 == 1) && (currentTime7 == 1)) // 0b011
+	{
+		return 0b011;
+	}
+	else if ((currentTime9 == 1) && (currentTime8 == 0) && (currentTime7 == 0)) // 0b100
+	{
+		return 0b100;
+	}
+	else if ((currentTime9 == 1) && (currentTime8 == 0) && (currentTime7 == 1)) // 0b101
+	{
+		return 0b101;
+	}
+	else if ((currentTime9 == 1) && (currentTime8 == 1) && (currentTime7 == 0)) // 0b110
+	{
+		return 0b110;
+	}
+	else if ((currentTime9 == 1) && (currentTime8 == 1) && (currentTime7 == 1)) // 0b111
+	{
+		return 0b111;
+	}
+}
 
 /* DATA READY
 	This function checks to see if there is data ready to be sent
@@ -370,6 +588,7 @@ bool TMP117::dataReady()
 {
 	uint16_t response = readRegister(TMP117_CONFIGURATION);
 
+	// If statement to see if the 13th bit of the register is 1 or not
 	if (response & 1 << 13)
 	{
 		return true;
@@ -378,19 +597,4 @@ bool TMP117::dataReady()
 	{
 		return false;
 	}
-
-	/* Code below not fully working yet */
-	// CONFIGURATION_REG reg;
-	// reg.CONFIGURATION_COMBINED = readRegister(TMP117_CONFIGURATION);
-	// uint8_t ready = reg.CONFIGURATION_FIELDS.DATA_READY;
-	// if (ready == 1)
-	// {
-	// 	Serial.println("Data Available");
-	// 	return true;
-	// }
-	// else
-	// {
-	// 	Serial.println("Data not available");
-	// 	return false;
-	// }
 }

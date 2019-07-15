@@ -47,31 +47,40 @@ TMP117 sensor; // Initalize sensor
 void setup()
 {
   Wire.begin();
-  Serial.begin(115200); // Start serial communication at 115200 baud
-  Wire.setClock(400000); // Set clock speed to be the fastest for better communication (fast mode)
+  Serial.begin(115200);    // Start serial communication at 115200 baud
+  Wire.setClock(400000);   // Set clock speed to be the fastest for better communication (fast mode)
+  sensor.setAddress(0x48); // Set the address of the device - see above address comments
+
   Serial.println("TMP117 Example 2: Alert Statuses");
-  if (sensor.begin() == true)
+  if (sensor.begin() == true) // Function to check if the sensor will correctly self-identify with the proper Device ID/Address
   {
     Serial.println("Begin");
   }
   else
   {
-    Serial.println("Device failed to setup");
+    Serial.println("Device failed to setup- Freezing code.");
     while (1);
   }
 }
 
+/* Alert statuses below for high or low temperature reading
+   possibilities: High Alert = 256°C, Low Alert = -256°C*/
 void loop()
 {
-  /*  Alert statuses below for really high or low temperature reading possibilities
-      High Alert = 256°C, Low Alert = -256°C. More accurate readings in the range
-      -50°C and +150°C - this is also the best operating temperature range*/
-  Serial.print("High Alert Status: ");
-  Serial.println(sensor.isHighAlert()); // Prints true if the upper threshold is reached and false otherwise
-  Serial.print("Low Alert Status: ");
-  Serial.println(sensor.isLowAlert()); // Prints true if the lower threshold is reached and false otherwise
-  // Serial.println();
-  Serial.println(sensor.readTempC()); // Here for debugging purposes, take out once alerts working
-  Serial.println(sensor.getAlert());
+  Serial.print("Current Temperature: ");
+  Serial.print(sensor.readTempC());
+  Serial.println("°C");
+  if(sensor.getHighAlert() == true)
+  {
+    Serial.println("High Alert");
+  }
+  else if(sensor.getLowAlert() == true)
+  {
+    Serial.println("Low Alert");
+  }
+  else
+  {
+    Serial.println("No Alert");
+  }
   delay(1000); // Delay for 1 second before printing again
 }
