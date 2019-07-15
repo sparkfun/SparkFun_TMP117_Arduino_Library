@@ -66,7 +66,7 @@ void setup()
   }
   else
   {
-    Serial.println("Device failed to setup.");
+    Serial.println("Device failed to setup- Freezing code.");
     while (1); // Runs forever if the sensor does not initialize correctly
   }
 

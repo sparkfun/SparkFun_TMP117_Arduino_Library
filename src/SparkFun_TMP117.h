@@ -72,7 +72,6 @@ public:
 	void setAddress(uint8_t addr);					 // Lets the user set the address of the device
 	double readTempC();								 // Returns the temperature in degrees C
 	double readTempF();								 // Converts readTempC result to degrees F
-	float temperatureOffset();						 // Reads the offset temperature value from the register
 	void softReset();								 // Performs a software reset on the Configuration Register Field bits
 	float getTemperatureOffset();					 // Reads the temperature offset
 	void setTemperatureOffset(float offset);		 // Writes to the temperature offset
