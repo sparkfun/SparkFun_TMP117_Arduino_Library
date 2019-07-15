@@ -5,8 +5,9 @@
   May 29 2019
   ~
 
-  This sketch configures the TMP117 temperature sensor and prints the
-  temperature.
+  This sketch can get and set the conversion mode that the temperature sensor can be in,
+  which is Continuous Conversion, Shutdown, or One-Shot. The specific values for these
+  are found below at the end of the comments section.
 
   Resources:
   Wire.h (included with Arduino IDE)
@@ -31,80 +32,109 @@
   For more information on reaching the most accurate readings from the sensor,
   reference the "Precise Temperature Measurements with TMP116" datasheet that is
   linked on Page 35 of the TMP117's datasheet
-*/
 
+
+  The default address of the device is 0x48 (GND)
+  Sensor address can be changed with an external jumper to:
+  VCC = 0x49
+  SDA = 0x4A
+  SCL = 0x4B
+
+
+  There are 3 different modes
+  Continuous Conversion (CC) = 0b00 = 1
+  Shutdown (SD) = 0b01 = 2
+  One-Shot Conversion (OS) = 0b11 = 3
+*/
 
 #include <Wire.h> // Used to establish serial communication on the I2C bus
 #include <SparkFun_TMP117.h> // Used to send and recieve specific information from our sensor
 
-// The default address of the device is 0x48 (GND)
-// Sensor address can be changed with an external jumper to:
-// VCC = 0x49
-// SDA = 0x4A
-// SCL = 0x4B
-TMP117 sensor; // Initalize sensor
-
-/* Change the Serial Monitor to have "No Line Ending" for the sketch to work properly */
+TMP117 sensor; // Initalize sensor object
 
 void setup()
 {
   Wire.begin();
-  Serial.begin(115200); // Start serial communication at 115200 baud
-<<<<<<< Updated upstream
-  // Wire.setClock(400000); // Set clock speed to be the fastest for better communication (fast mode)
-  Serial.println("TMP117 Example 4: Set Conversion Mode");
-  Serial.println(); // Create a whitespace for easier readings
-=======
-  //does the I2C clock need to be initialized here??
-  Serial.println("TMP117 Example 4: Set Conversion Mode \r\n");
+  Serial.begin(115200);    // Start serial communication at 115200 baud
+  Wire.setClock(400000);   // Set clock speed to be the fastest for better communication (fast mode)
+  sensor.setAddress(0x48); // Set the address of the device - see above address comments for more information
 
-  //make sure the sensor is set up properly
-  if(sensor.begin()) {
-    Serial.println("Device found. I2C connections are good.");
+  Serial.println("TMP117 Example 4: Setting Conversion Modes");
+  if (sensor.begin() == true) // Function to check if the sensor will correctly self-identify with the proper Device ID/Address
+  {
+    Serial.println("Begin");
   }
-  
-  else {
-    Serial.println("Device not found. Check your connections and reset.");
-    while(1); //hang forever
+  else
+  {
+    Serial.println("Device failed to setup- Freezing code.");
+    while (1); // Runs forever if the sensor does not initialize correctly
   }
->>>>>>> Stashed changes
+
+  Serial.println("Conversion Modes: ");
+  Serial.println("1: Continuous");
+  Serial.println("2: Shutdown");
+  Serial.println("3: One-Shot");
+  Serial.print("Current Conversion Mode: ");
+  Serial.println(sensor.getConversionMode()); // Prints the conversion mode of the device to the Serial Monitor
 }
 
 
-/* There are 4 different modes
-  Continuous Conversion (CC) = 0b00 = 0
-  Shutdown (SD) = 0b01 = 1
-  Continuous Conversion (CC), Same as 00 (Reads back = 00) = 0b10 = 2
-  One-Shot Conversion (OS) = 0b11 = 3
-*/
-
+// For function to work, make sure the Serial Monitor is set to "No Line Ending"
 void loop()
 {
-  if (sensor.begin() == true)
+  Serial.println("Enter your mode of Conversion (number 1 - 3): ");
+  while (Serial.available() == 0); // Waits for the user input
+  uint8_t convMode = Serial.parseInt(); // Reads the input from the serial port
+  Serial.print("Number received: ");
+  Serial.println(convMode);
+  if (convMode == 1)
   {
-    Serial.print("Current Conversion Mode: ");
-    Serial.println(sensor.getConversionMode());
-    Serial.println("Enter your mode of Conversion (number 0 - 3): ");
-    while (Serial.available() == 0); // Waits for the user input
-    byte mode = Serial.read(); // Reads the input from the serial port
-    Serial.print("Number recieved: ");
-    Serial.println(mode);
-    delay(500);
-    if (mode == '0' || mode == '1' || mode == '2' || mode == '3')
+    sensor.setContinuousConversionMode(); // Sets mode register value to be 0b00
+    Serial.print("New Conversion Mode: ");
+    if (sensor.getConversionMode() == 1) 
     {
-      sensor.setConversionMode((uint8_t)mode);
-      Serial.println();
-      delay(500);
+      Serial.println("Continuous Conversion");
     }
     else
     {
-      Serial.println("Conversion mode unsuccessfully set - Please enter a number 0 - 3");
+      Serial.println("Error setting new Conversion Mode");
     }
-    delay(1000);
+    Serial.println(); // Create a whitespace for easier readings
   }
-
-  else // Runs when the device was unable to setup properly
+  else if (convMode == 2)
   {
-    Serial.println("Device failed to setup");
+    sensor.setShutdownMode(); // Sets mode register value to be 0b01
+    Serial.print("New Conversion Mode: ");
+    if (sensor.getConversionMode() == 2)
+    {
+      Serial.println("Shutdown Mode");
+    }
+    else
+    {
+      Serial.println("Error setting new Conversion Mode");
+    }
+    sensor.getConversionMode();
+    Serial.println(); // Create a whitespace for easier readings
   }
+  else if (convMode == 3)
+  {
+    sensor.setOneShotMode(); // Sets mode register value to be 0b11
+    Serial.print("New Conversion Mode: ");
+    if (sensor.getConversionMode() == 3)
+    {
+      Serial.println("One-Shot Mode");
+    }
+    else
+    {
+      Serial.println("Error setting new Conversion Mode");
+    }
+    sensor.getConversionMode();
+    Serial.println(); // Create a whitespace for easier readings
+  }
+  else
+  {
+    Serial.println("Conversion mode unsuccessfully set - Please enter a number 1 - 3");
+    Serial.println(); // Create a whitespace for easier readings
+  }
+  delay(1000);
 }
