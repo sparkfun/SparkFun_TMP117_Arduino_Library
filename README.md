@@ -1,7 +1,7 @@
 SparkFun TMP117 Library
 ========================================
 
-[![SparkX High Precision Temperature Sensor - TMP117](https://cdn.sparkfun.com/assets/parts/1/3/9/6/5/SPX-15413-1.jpg)](https://www.sparkfun.com/products/15413)
+[![SparkX High Precision Temperature Sensor - TMP117](https://cdn.sparkfun.com/assets/parts/1/3/9/6/5/15413-High_Precision_Temperature_Sensor_-_TMP117__Qwiic_-01.jpg)](https://www.sparkfun.com/products/15413)
 
 [*High Precision Temperature Sensor - TMP117 (Qwiic) (SPX-15413)*](https://www.sparkfun.com/products/15413)
 
