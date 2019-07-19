@@ -72,16 +72,11 @@ void loop()
     float tempF = sensor.readTempF();
     // Print temperature in °C and °F
     Serial.println(); // Create a white space for easier viewing
-    Serial.print("Temperature in Celsius: %d", sensor.readTempC());
+    Serial.print("Temperature in Celsius: ");
     Serial.println(tempC);
-    Serial.print("Temperature in Fahrenheit: %d", sensor.readTempF());
+    Serial.print("Temperature in Fahrenheit: ");
     Serial.println(tempF);
     delay(500); // Delay added for easier readings
-  
-    /* Code below only for testing purposes */
-    sensor.setConversionMode(3);
-    uint8_t mode = sensor.getConversionMode();
-    Serial.println(mode);
     
   }
   else
