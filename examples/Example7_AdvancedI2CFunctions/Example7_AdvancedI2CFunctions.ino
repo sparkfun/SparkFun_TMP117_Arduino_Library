@@ -44,13 +44,20 @@ TMP117 sensor; // Initalize sensor
  VCC = 0x49
  SDA = 0x4A
  SCL = 0x4B
- For a table of the addresses, reference page 19, Table 2 on the TMP117 Datasheet */
+ For a table of the addresses, reference page 19, Table 2 on the TMP117 Datasheet 
+
+ 
+ This sketch only works if your platform doesn't have multiple I2C ports. This will not 
+ work on an Arduino Uno platform.
+ 
+ To test the functionality of changing the addresses, change "Wire1" to "Wire" below
+ */
 
 void setup()
 {
-  Wire.begin();
+  Wire1.begin(); // Compilation will fail here if your platform doesn't have multiple I2C ports
   Serial.begin(115200);    // Start serial communication at 115200 baud
-  Wire.setClock(400000);   // Set clock speed to be the fastest for better communication (fast mode)
+  Wire1.setClock(400000);   // Set clock speed to be the fastest for better communication (fast mode)
 
   Serial.println("TMP117 Example 7: Advanced I2C Functions");
   if (sensor.begin() == true) // Function to check if the sensor will correctly self-identify with the proper Device ID/Address
