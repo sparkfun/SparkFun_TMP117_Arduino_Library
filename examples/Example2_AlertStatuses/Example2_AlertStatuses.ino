@@ -14,7 +14,7 @@
 
   Development environment specifics:
   Arduino 1.8.9+
-  Hardware Version 1
+  Hardware Version 1.0.0
 
   This code is beerware; if you see me (or any other SparkFun employee) at
   the local, and you've found our code helpful, please buy us a round!
@@ -79,6 +79,6 @@ void loop()
     {
       Serial.println("No Alert");
     }
-    delay(1000); // Delay for 1 second before printing again
+    delay(500); // Delay for a 1/2 second before printing again if the data is ready
   }
 }

@@ -15,7 +15,7 @@
 
   Development environment specifics:
   Arduino 1.8.9+
-  Hardware Version 1
+  Hardware Version 1.0.0
 
   This code is beerware; if you see me (or any other SparkFun employee) at
   the local, and you've found our code helpful, please buy us a round!

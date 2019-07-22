@@ -6,7 +6,9 @@
   ~
 
   This sketch can set and get the temperature limits for the sensor. These
-  limits can be set within +/- 256°C.
+  limits can be set within +/- 256°C. When the temperature goes above/below the 
+  specified temperature limits, it will cause the alert pins to go high. To
+  access these registers, please reference Example 2: Alert Statuses
 
   Resources:
   Wire.h (included with Arduino IDE)
@@ -14,7 +16,7 @@
 
   Development environment specifics:
   Arduino 1.8.9+
-  Hardware Version 1
+  Hardware Version 1.0.0
 
   This code is beerware; if you see me (or any other SparkFun employee) at
   the local, and you've found our code helpful, please buy us a round!
