@@ -33,13 +33,7 @@
   reference the "Precise Temperature Measurements with TMP116" datasheet that is
   linked on Page 35 of the TMP117's datasheet
 
-
   The default address of the device is 0x48 (GND)
-  Sensor address can be changed with an external jumper to:
-  VCC = 0x49
-  SDA = 0x4A
-  SCL = 0x4B
-
 
   There are 3 different modes
   Continuous Conversion (CC) = 0b00 = 1
@@ -50,6 +44,7 @@
 #include <Wire.h> // Used to establish serial communication on the I2C bus
 #include <SparkFun_TMP117.h> // Used to send and recieve specific information from our sensor
 
+// The default address of the device is 0x48 (GND)
 TMP117 sensor; // Initalize sensor object
 
 void setup()
@@ -57,7 +52,6 @@ void setup()
   Wire.begin();
   Serial.begin(115200);    // Start serial communication at 115200 baud
   Wire.setClock(400000);   // Set clock speed to be the fastest for better communication (fast mode)
-  sensor.setAddress(0x48); // Set the address of the device - see above address comments for more information
 
   Serial.println("TMP117 Example 4: Setting Conversion Modes");
   if (sensor.begin() == true) // Function to check if the sensor will correctly self-identify with the proper Device ID/Address

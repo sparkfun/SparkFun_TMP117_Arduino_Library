@@ -65,31 +65,30 @@ typedef union {
 class TMP117
 {
 public:
-	TMP117(TwoWire &wirePort = Wire); // Constructor
+	TMP117(); // Constructor
 
-	bool begin();									 // Checks for ACK over I2C, and checks the device ID of the TMP
-	uint8_t getAddress();							 // Lets the user see the current address of the device
-	void setAddress(uint8_t addr);					 // Lets the user set the address of the device
-	double readTempC();								 // Returns the temperature in degrees C
-	double readTempF();								 // Converts readTempC result to degrees F
-	void softReset();								 // Performs a software reset on the Configuration Register Field bits
-	float getTemperatureOffset();					 // Reads the temperature offset
-	void setTemperatureOffset(float offset);		 // Writes to the temperature offset
-	float getLowLimit();							 // Returns the low limit register
-	void setLowLimit(float lowLimit);				 // Sets the low limit temperature for the low limit register
-	float getHighLimit();							 // Returns the high limit register
-	void setHighLimit(float highLimit);				 // Sets the low limit temperature for the low limit register
-	bool getHighAlert();							 // Reads in Alert mode for a high alert flag
-	bool getLowAlert();								 // Reads in Alert mode for a low alert flag
-	uint8_t getConversionMode();					 // Checks to see the Conversion Mode the device is currently in
-	void setContinuousConversionMode();				 // Sets the Conversion Mode of the Device to be Continuous
-	void setOneShotMode();							 // Sets the Conversion Mode of the Device to be One Shot
-	void setShutdownMode();							 // Sets the Conversion Mode of the Device to be Shutdown
-	void setConversionAverageMode(uint8_t convMode); // Sets the conversion averaging mode
-	uint8_t getConversionAverageMode();				 // Returns the Conversion Averaging Mode
-	void setConversionCycleBit(uint8_t convTime);	// Sets the conversion cycle time bit
-	uint8_t getConversionCycleBit();				 // Returns the conversion cycle time bit value
-	bool dataReady();								 // Checks to see if there is data ready from the device
+	bool begin(uint8_t sensorAddress = 0x48, TwoWire &wirePort = Wire); // Checks for ACK over I2C, and sets the device ID of the TMP and chooses the wire port
+	uint8_t getAddress();												// Returns the address of the device
+	double readTempC();													// Returns the temperature in degrees C
+	double readTempF();													// Converts readTempC result to degrees F
+	void softReset();													// Performs a software reset on the Configuration Register Field bits
+	float getTemperatureOffset();										// Reads the temperature offset
+	void setTemperatureOffset(float offset);							// Writes to the temperature offset
+	float getLowLimit();												// Returns the low limit register
+	void setLowLimit(float lowLimit);									// Sets the low limit temperature for the low limit register
+	float getHighLimit();												// Returns the high limit register
+	void setHighLimit(float highLimit);									// Sets the low limit temperature for the low limit register
+	bool getHighAlert();												// Reads in Alert mode for a high alert flag
+	bool getLowAlert();													// Reads in Alert mode for a low alert flag
+	uint8_t getConversionMode();										// Checks to see the Conversion Mode the device is currently in
+	void setContinuousConversionMode();									// Sets the Conversion Mode of the Device to be Continuous
+	void setOneShotMode();												// Sets the Conversion Mode of the Device to be One Shot
+	void setShutdownMode();												// Sets the Conversion Mode of the Device to be Shutdown
+	void setConversionAverageMode(uint8_t convMode);					// Sets the conversion averaging mode
+	uint8_t getConversionAverageMode();									// Returns the Conversion Averaging Mode
+	void setConversionCycleBit(uint8_t convTime);						// Sets the conversion cycle time bit
+	uint8_t getConversionCycleBit();									// Returns the conversion cycle time bit value
+	bool dataReady();													// Checks to see if there is data ready from the device
 
 private:
 	TwoWire *_i2cPort = NULL; //The generic connection to user's chosen I2C hardware

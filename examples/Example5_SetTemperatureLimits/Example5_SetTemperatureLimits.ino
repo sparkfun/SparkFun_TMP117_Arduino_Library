@@ -37,10 +37,6 @@
 #include <SparkFun_TMP117.h> // Used to send and recieve specific information from the sensor
 
 // The default address of the device is 0x48 (GND)
-// Sensor address can be changed with an external jumper to:
-// VCC = 0x49
-// SDA = 0x4A
-// SCL = 0x4B
 TMP117 sensor; // Initalize sensor
 
 
@@ -49,7 +45,6 @@ void setup()
   Wire.begin();
   Serial.begin(115200);    // Start serial communication at 115200 baud
   Wire.setClock(400000);   // Set clock speed to be the fastest for better communication (fast mode)
-  sensor.setAddress(0x48); // Set the address of the device - see above address comments
 
   Serial.println("TMP117 Example 5: Setting High and Low Temperature Limits");
   if (sensor.begin() == true) // Function to check if the sensor will correctly self-identify with the proper Device ID/Address

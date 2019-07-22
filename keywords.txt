@@ -12,7 +12,6 @@ TMP117	KEYWORD1
 
 begin	KEYWORD2
 getAddress	KEYWORD2
-setAddress      KEYWORD2
 readTempC	KEYWORD2
 readTempF	KEYWORD2
 softReset	KEYWORD2
@@ -32,6 +31,6 @@ setConversionAverageMode	KEYWORD2
 getConversionAverageMode	KEYWORD2
 setConversionCycleBit	KEYWORD2
 getConversionCycleBit	KEYWORD2
-dataReady KEYWORD2
+dataReady	KEYWORD2
 readRegister	KEYWORD2
 writeRegister	KEYWORD2

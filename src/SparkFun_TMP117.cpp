@@ -42,18 +42,22 @@ Distributed as-is; no warranty is given.
 	This needs to be called when running the example sketches to
 	initialize the sensor and be able to call to the library. 
 */
-TMP117::TMP117(TwoWire &wirePort)
+TMP117::TMP117()
 {
-	_i2cPort = &wirePort;
 }
 
 /* BEGIN
     This function checks if the TMP will ACK over I2C, and
 	if the TMP will correctly self-identify with the proper
-	device ID. Returns true if both checks pass.
+	device ID. This will set the address of the device along 
+	with setting the wire for the I2C Communication. 
+	This will return true if both checks pass.
 */
-bool TMP117::begin()
+bool TMP117::begin(uint8_t sensorAddress, TwoWire &wirePort)
 {
+	_i2cPort = &wirePort;			// Chooses the wire port of the device
+	_deviceAddress = sensorAddress; // Sets the address of the device
+
 	//make sure the TMP will acknowledge over I2C
 	_i2cPort->beginTransmission(_deviceAddress);
 	if (_i2cPort->endTransmission() != 0)
@@ -73,26 +77,14 @@ bool TMP117::begin()
 	return true; //returns true if all the checks pass
 }
 
-/* GET ADDRESS
-	This function calls for the current address of the device to be
-	set up. The addresses are 0x48 = GND, 0x49 = V+, 0x4A = ADD0, 0x4B = SCL
-	The default address of the device is 0x48. 
+/* GET ADDRESS 
+	This function returns the address of the device once
+	called upon. This address can only be 0x48 (GND), 
+	0x49 (V+), 0x4A (SDA), and 0x4B (SCL)
 */
 uint8_t TMP117::getAddress()
 {
 	return _deviceAddress;
-}
-
-/* SET ADDRESS
-	This function calls for the user to write the address of the 
-	device with 0x48 = GND, 0x49 = V+, 0x4A = ADD0, 0x4B = SCL
-	The sensor can be used to connect up to 4 devices if the addresses
-	are called correctly (Found on Page 19, Table 2).
-	The defauly address of the device is 0x48. 
-*/
-void TMP117::setAddress(uint8_t addr)
-{
-	_deviceAddress = addr;
 }
 
 /* READ REGISTER
