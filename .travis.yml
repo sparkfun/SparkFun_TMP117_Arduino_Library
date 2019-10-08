@@ -16,7 +16,7 @@ before_install:
 # - sudo iptables -A OUTPUT -o lo -j ACCEPT
 # - sudo iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 install:
-- ln -s $PWD C:\Users\priyanka.makin\Documents\Arduino\libraries\SparkFun_TMP117_Arduino_Library
+- ln -s $PWD /usr/local/share/arduino/libraries/SparkFun_TMP117_Arduino_Library
 - arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/sparkfun/Arduino_Boards/master/IDE_Board_Manager/package_sparkfun_index.json" --save-prefs
 # - arduino --install-boards SparkFun:samd
 # - arduino --install-boards SparkFun:apollo3
@@ -27,7 +27,7 @@ install:
 script:
 #compile for arduino AVR
 - echo Compiling for Arduino AVR...
-- arduino --verify --board arduino:avr:uno $PWD\examples\Example1_BasicReadings\Example1_BasicReadings.ino
+- arduino --verify --board arduino:avr:uno $PWD/examples/Example1_BasicReadings/Example1_BasicReadings.ino
 
 - git config user.name "Travis CI"
 - git config user.email "travis@travis-ci.org"
