@@ -33,7 +33,7 @@ Distributed as-is; no warranty is given.
 
 #include <Arduino.h>
 #include <Wire.h>
-#include "Sparkfun_TMP117_Registers.h"
+#include "SparkFun_TMP117_Registers.h"
 #include "SparkFun_TMP117.h"
 
 /* CONSTRUCTOR
