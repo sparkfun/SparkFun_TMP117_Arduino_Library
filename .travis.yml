@@ -25,25 +25,25 @@ install:
 # - arduino --pref "boardsmanager.additional.urls=http://arduino.esp8266.com/stable/package_esp8266com_index.json" --save-prefs
   
 script:
-#compile for SparkFun RedBoard
-- echo Compiling for SparkFun RedBoard...
-- arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example1_BasicReadings/Example1_BasicReadings.ino
-- arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example2_AlertStatuses/Example2_AlertStatuses.ino
-- arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example3_SetOffsetTemperatureValue/Example3_SetOffsetTemperatureValue.ino
-- arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example4_SetConversionMode/Example4_SetConversionMode.ino
-- arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example5_SetTemperatureLimits/Example5_SetTemperatureLimits.ino
-- arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example6_SetConversionCycleTime/Example6_SetConversionCycleTime.ino
-# - arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example7_AdvancedI2CFunctions/Example7_AdvancedI2CFunctions.ino
+# #compile for SparkFun RedBoard
+# - echo Compiling for SparkFun RedBoard...
+# - arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example1_BasicReadings/Example1_BasicReadings.ino
+# - arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example2_AlertStatuses/Example2_AlertStatuses.ino
+# - arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example3_SetOffsetTemperatureValue/Example3_SetOffsetTemperatureValue.ino
+# - arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example4_SetConversionMode/Example4_SetConversionMode.ino
+# - arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example5_SetTemperatureLimits/Example5_SetTemperatureLimits.ino
+# - arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example6_SetConversionCycleTime/Example6_SetConversionCycleTime.ino
+# # - arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example7_AdvancedI2CFunctions/Example7_AdvancedI2CFunctions.ino
 
 #compile for SparkFun apollo3
 - echo Compiling for SparkFun Apollo3...
-- arduino --verify --board SparkFun:apollo3:amap3blackboard $PWD/examples/Example1_BasicReadings/Example1_BasicReadings.ino
-- arduino --verify --board SparkFun:apollo3:amap3blackboard $PWD/examples/Example2_AlertStatuses/Example2_AlertStatuses.ino
-- arduino --verify --board SparkFun:apollo3:amap3blackboard $PWD/examples/Example3_SetOffsetTemperatureValue/Example3_SetOffsetTemperatureValue.ino
-- arduino --verify --board SparkFun:apollo3:amap3blackboard $PWD/examples/Example4_SetConversionMode/Example4_SetConversionMode.ino
-- arduino --verify --board SparkFun:apollo3:amap3blackboard $PWD/examples/Example5_SetTemperatureLimits/Example5_SetTemperatureLimits.ino
-- arduino --verify --board SparkFun:apollo3:amap3blackboard $PWD/examples/Example6_SetConversionCycleTime/Example6_SetConversionCycleTime.ino
-- arduino --verify --board SparkFun:apollo3:amap3blackboard $PWD/examples/Example7_AdvanceI2CFunctions/Example7_AdvancedI2CFunctions.ino
+- arduino --verify --board SparkFun:apollo3:SparkFun RedBoard Artemis $PWD/examples/Example1_BasicReadings/Example1_BasicReadings.ino
+# - arduino --verify --board SparkFun:apollo3:amap3blackboard $PWD/examples/Example2_AlertStatuses/Example2_AlertStatuses.ino
+# - arduino --verify --board SparkFun:apollo3:amap3blackboard $PWD/examples/Example3_SetOffsetTemperatureValue/Example3_SetOffsetTemperatureValue.ino
+# - arduino --verify --board SparkFun:apollo3:amap3blackboard $PWD/examples/Example4_SetConversionMode/Example4_SetConversionMode.ino
+# - arduino --verify --board SparkFun:apollo3:amap3blackboard $PWD/examples/Example5_SetTemperatureLimits/Example5_SetTemperatureLimits.ino
+# - arduino --verify --board SparkFun:apollo3:amap3blackboard $PWD/examples/Example6_SetConversionCycleTime/Example6_SetConversionCycleTime.ino
+# - arduino --verify --board SparkFun:apollo3:amap3blackboard $PWD/examples/Example7_AdvanceI2CFunctions/Example7_AdvancedI2CFunctions.ino
 
 - git config user.name "Travis CI"
 - git config user.email "travis@travis-ci.org"
