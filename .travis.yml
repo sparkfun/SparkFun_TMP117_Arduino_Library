@@ -28,6 +28,12 @@ script:
 #compile for arduino AVR
 - echo Compiling for Arduino AVR...
 - arduino --verify --board arduino:avr:uno $PWD/examples/Example1_BasicReadings/Example1_BasicReadings.ino
+- arduino --verify --board arduino:avr:uno $PWD/examples/Example2_AlertStatuses/Example2_AlertStatuses.ino
+- arduino --verify --board arduino:avr:uno $PWD/examples/Example3_SetOffsetTemperatureValue/Example3_SetOffsetTemperatureValue.ino
+- arduino --verify --board arduino:avr:uno $PWD/examples/Example4_SetConversionMode/Example4_SetConversionMode.ino
+- arduino --verify --board arduino:avr:uno $PWD/examples/Example5_SetTemperatureLimits/Example5_SetTemperatureLimits.ino
+- arduino --verify --board arduino:avr:uno $PWD/examples/Example6_SetConversionCycleTime/Example6_SetConversionCycleTime.ino
+- arduino --verify --board arduino:avr:uno $PWD/examples/Example7_AdvancedI2CFunctions/Example7_AdvancedI2CFunctions.ino
 
 - git config user.name "Travis CI"
 - git config user.email "travis@travis-ci.org"
