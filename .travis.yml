@@ -27,7 +27,7 @@ install:
 script:
 # #compile for SparkFun RedBoard
 # - echo Compiling for SparkFun RedBoard...
-# - arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example1_BasicReadings/Example1_BasicReadings.ino
+- arduino --verify --board SparkFun:avr:MaKey MaKey $PWD/examples/Example1_BasicReadings/Example1_BasicReadings.ino
 # - arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example2_AlertStatuses/Example2_AlertStatuses.ino
 # - arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example3_SetOffsetTemperatureValue/Example3_SetOffsetTemperatureValue.ino
 # - arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example4_SetConversionMode/Example4_SetConversionMode.ino
@@ -37,7 +37,7 @@ script:
 
 #compile for SparkFun apollo3
 - echo Compiling for SparkFun Apollo3...
-- arduino --verify --board SparkFun:apollo3:amap3blackboard $PWD/examples/Example1_BasicReadings/Example1_BasicReadings.ino
+# - arduino --verify --board SparkFun:apollo3:amap3blackboard $PWD/examples/Example1_BasicReadings/Example1_BasicReadings.ino
 # - arduino --verify --board SparkFun:apollo3:amap3blackboard $PWD/examples/Example2_AlertStatuses/Example2_AlertStatuses.ino
 # - arduino --verify --board SparkFun:apollo3:amap3blackboard $PWD/examples/Example3_SetOffsetTemperatureValue/Example3_SetOffsetTemperatureValue.ino
 # - arduino --verify --board SparkFun:apollo3:amap3blackboard $PWD/examples/Example4_SetConversionMode/Example4_SetConversionMode.ino
