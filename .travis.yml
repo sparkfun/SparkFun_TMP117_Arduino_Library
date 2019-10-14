@@ -18,7 +18,7 @@ before_install:
 
 install:
 - ln -s $PWD /usr/local/share/arduino/libraries/SparkFun_TMP117_Arduino_Library
-- arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/sparkfun/Arduino_Boards/master/IDE_Board_Manager/package_sparkfun_index.json" --save-prefs
+- arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/sparkfun/Arduino_Boards/master/IDE_Board_Manager/package_sparkfun_index.json,https://adafruit.github.io/arduino-board-index/package_adafruit_index.json" --save-prefs 2>&1
 - arduino --install-boards SparkFun:samd
 - arduino --install-boards SparkFun:apollo3
 - arduino --install-boards SparkFun:avr
