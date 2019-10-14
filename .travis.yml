@@ -23,6 +23,7 @@ install:
 - arduino --install-boards SparkFun:apollo3
 - arduino --install-boards SparkFun:avr
 - arduino --pref "boardsmanager.additional.urls=https://adafruit.github.io/arduino-board-index/package_adafruit_index.json,http://arduino.esp8266.com/stable/package_esp8266com_index.json" --save-prefs 2>&1
+- arduino --install-boards adafruit:avr
 # - arduino --pref "boardsmanager.additional.urls=http://arduino.esp8266.com/stable/package_esp8266com_index.json" --save-prefs
   
 script:
