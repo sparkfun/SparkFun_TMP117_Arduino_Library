@@ -27,42 +27,42 @@ install:
 # - arduino --pref "boardsmanager.additional.urls=http://arduino.esp8266.com/stable/package_esp8266com_index.json" --save-prefs
   
 script:
-# #compile for SparkFun RedBoard
-# - echo Compiling for SparkFun RedBoard...
+#compile for SparkFun RedBoard
+- echo Compiling for SparkFun RedBoard...
 - arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example1_BasicReadings/Example1_BasicReadings.ino
-# - arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example2_AlertStatuses/Example2_AlertStatuses.ino
-# - arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example3_SetOffsetTemperatureValue/Example3_SetOffsetTemperatureValue.ino
-# - arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example4_SetConversionMode/Example4_SetConversionMode.ino
-# - arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example5_SetTemperatureLimits/Example5_SetTemperatureLimits.ino
-# - arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example6_SetConversionCycleTime/Example6_SetConversionCycleTime.ino
-# # - arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example7_AdvancedI2CFunctions/Example7_AdvancedI2CFunctions.ino
+- arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example2_AlertStatuses/Example2_AlertStatuses.ino
+- arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example3_SetOffsetTemperatureValue/Example3_SetOffsetTemperatureValue.ino
+- arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example4_SetConversionMode/Example4_SetConversionMode.ino
+- arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example5_SetTemperatureLimits/Example5_SetTemperatureLimits.ino
+- arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example6_SetConversionCycleTime/Example6_SetConversionCycleTime.ino
+# - arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example7_AdvancedI2CFunctions/Example7_AdvancedI2CFunctions.ino
 
 #compile for SparkFun Artemis
-# - echo Compiling for SparkFun Artemis...
+- echo Compiling for SparkFun Artemis...
 - arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example1_BasicReadings/Example1_BasicReadings.ino
-# - arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example2_AlertStatuses/Example2_AlertStatuses.ino
-# - arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example3_SetOffsetTemperatureValue/Example3_SetOffsetTemperatureValue.ino
-# - arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example4_SetConversionMode/Example4_SetConversionMode.ino
-# - arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example5_SetTemperatureLimits/Example5_SetTemperatureLimits.ino
-# - arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example6_SetConversionCycleTime/Example6_SetConversionCycleTime.ino
-# - arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example7_AdvancedI2CFunctions/Example7_AdvancedI2CFunctions.ino
+- arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example2_AlertStatuses/Example2_AlertStatuses.ino
+- arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example3_SetOffsetTemperatureValue/Example3_SetOffsetTemperatureValue.ino
+- arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example4_SetConversionMode/Example4_SetConversionMode.ino
+- arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example5_SetTemperatureLimits/Example5_SetTemperatureLimits.ino
+- arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example6_SetConversionCycleTime/Example6_SetConversionCycleTime.ino
+- arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example7_AdvancedI2CFunctions/Example7_AdvancedI2CFunctions.ino
 
-# #compile for SparkFun SAMD
-# - echo Compiling for SparkFun SAMD...
+#compile for SparkFun SAMD
+- echo Compiling for SparkFun SAMD...
 - arduino --verify --board SparkFun:samd:samd51_thing_plus $PWD/examples/Example1_BasicReadings/Example1_BasicReadings.ino
-# - arduino --verify --board SparkFun:samd:samd51_thing_plus $PWD/examples/Example2_AlertStatuses/Example2_AlertStatuses.ino
-# - arduino --verify --board SparkFun:samd:samd51_thing_plus $PWD/examples/Example3_SetOffsetTemperatureValue/Example3_SetOffsetTemperatureValue.ino
-# - arduino --verify --board SparkFun:samd:samd51_thing_plus $PWD/examples/Example4_SetConversionMode/Example4_SetConversionMode.ino
-# - arduino --verify --board SparkFun:samd:samd51_thing_plus $PWD/examples/Example5_SetTemperatureLimits/Example5_SetTemperatureLimits.ino
-# - arduino --verify --board SparkFun:samd:samd51_thing_plus $PWD/examples/Example6_SetConversionCycleTime/Example6_SetConversionCycleTime.ino
-# # - arduino --verify --board SparkFun:samd:samd51_thing_plus $PWD/examples/Example7_AdvancedI2CFunctions/Example7_AdvancedI2CFunctions.ino
+- arduino --verify --board SparkFun:samd:samd51_thing_plus $PWD/examples/Example2_AlertStatuses/Example2_AlertStatuses.ino
+- arduino --verify --board SparkFun:samd:samd51_thing_plus $PWD/examples/Example3_SetOffsetTemperatureValue/Example3_SetOffsetTemperatureValue.ino
+- arduino --verify --board SparkFun:samd:samd51_thing_plus $PWD/examples/Example4_SetConversionMode/Example4_SetConversionMode.ino
+- arduino --verify --board SparkFun:samd:samd51_thing_plus $PWD/examples/Example5_SetTemperatureLimits/Example5_SetTemperatureLimits.ino
+- arduino --verify --board SparkFun:samd:samd51_thing_plus $PWD/examples/Example6_SetConversionCycleTime/Example6_SetConversionCycleTime.ino
+# - arduino --verify --board SparkFun:samd:samd51_thing_plus $PWD/examples/Example7_AdvancedI2CFunctions/Example7_AdvancedI2CFunctions.ino
 
 #compile for Adafruit Pro Trinket 5
 - echo Compiling for AdaFruit Pro Trinket 5...
 - arduino --verify --board adafruit:avr:protrinket5 $PWD/examples/Example1_BasicReadings/Example1_BasicReadings.ino
 - arduino --verify --board adafruit:avr:protrinket5 $PWD/examples/Example2_AlertStatuses/Example2_AlertStatuses.ino
-- arduino --verify --board adafruit:avr:protrinket5 $PWD/examples/Example3_SetOffsetTemperature/Exampel3_SetOffsetTemperature.ino
+- arduino --verify --board adafruit:avr:protrinket5 $PWD/examples/Example3_SetOffsetTemperature/Example3_SetOffsetTemperature.ino
 - arduino --verify --board adafruit:avr:protrinket5 $PWD/examples/Example4_SetConversionMode/Example4_SetConversionMode.ino
 - arduino --verify --board adafruit:avr:protrinket5 $PWD/examples/Example5_SetTemperatureLimits/Example5_SetTemperatureLimits.ino
 - arduino --verify --board adafruit:avr:protrinket5 $PWD/examples/Example6_SetConversionCycleTime/Example6_SetConversionCycleTime.ino
-- arduino --verify --board adafruit:avr:protrinket5 $PWD/examples/Example7_AdvancedI2CFunctions/Example7_AdvancedI2CFunctions.ino
+# - arduino --verify --board adafruit:avr:protrinket5 $PWD/examples/Example7_AdvancedI2CFunctions/Example7_AdvancedI2CFunctions.ino
