@@ -37,7 +37,7 @@ script:
 # # - arduino --verify --board SparkFun:avr:RedBoard $PWD/examples/Example7_AdvancedI2CFunctions/Example7_AdvancedI2CFunctions.ino
 
 #compile for SparkFun Artemis
-- echo Compiling for SparkFun Artemis...
+# - echo Compiling for SparkFun Artemis...
 # - arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example1_BasicReadings/Example1_BasicReadings.ino
 # - arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example2_AlertStatuses/Example2_AlertStatuses.ino
 # - arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example3_SetOffsetTemperatureValue/Example3_SetOffsetTemperatureValue.ino
@@ -58,5 +58,5 @@ script:
 
 #compile for Adafruit Pro Trinket 5
 - echo Compiling for AdaFruit Pro Trinket 5...
-- arduino --verify --board Adafruit:trinket:protrinket5 $PWD/examples/Example1_BasicReadings/Example1_BasicReadings.ino
+- arduino --verify --board Adafruit:protrinket:protrinket5 $PWD/examples/Example1_BasicReadings/Example1_BasicReadings.ino
 
