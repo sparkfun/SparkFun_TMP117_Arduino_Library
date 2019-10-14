@@ -38,15 +38,21 @@ script:
 
 #compile for SparkFun Artemis
 - echo Compiling for SparkFun Artemis...
-- arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example1_BasicReadings/Example1_BasicReadings.ino
-- arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example2_AlertStatuses/Example2_AlertStatuses.ino
-- arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example3_SetOffsetTemperatureValue/Example3_SetOffsetTemperatureValue.ino
-- arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example4_SetConversionMode/Example4_SetConversionMode.ino
-- arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example5_SetTemperatureLimits/Example5_SetTemperatureLimits.ino
-- arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example6_SetConversionCycleTime/Example6_SetConversionCycleTime.ino
-# - arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example7_AdvanceI2CFunctions/Example7_AdvancedI2CFunctions.ino
+# - arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example1_BasicReadings/Example1_BasicReadings.ino
+# - arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example2_AlertStatuses/Example2_AlertStatuses.ino
+# - arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example3_SetOffsetTemperatureValue/Example3_SetOffsetTemperatureValue.ino
+# - arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example4_SetConversionMode/Example4_SetConversionMode.ino
+# - arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example5_SetTemperatureLimits/Example5_SetTemperatureLimits.ino
+# - arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example6_SetConversionCycleTime/Example6_SetConversionCycleTime.ino
+- arduino --verify --board SparkFun:apollo3:amap3redboard $PWD/examples/Example7_AdvancedI2CFunctions/Example7_AdvancedI2CFunctions.ino
 
 #compile for SparkFun SAMD
 - echo Compiling for SparkFun SAMD...
 - arduino --verify --board SparkFun:samd:samd51_thing_plus $PWD/examples/Example1_BasicReadings/Example1_BasicReadings.ino
+- arduino --verify --board SparkFun:samd:samd51_thing_plus $PWD/examples/Example2_AlertStatuses/Example2_AlertStatuses.ino
+- arduino --verify --board SparkFun:samd:samd51_thing_plus $PWD/examples/Example3_SetOffsetTemperatureValue/Example3_SetOffsetTemperatureValue.ino
+- arduino --verify --board SparkFun:samd:samd51_thing_plus $PWD/examples/Example4_SetConversionMode/Example4_SetConversionMode.ino
+- arduino --verify --board SparkFun:samd:samd51_thing_plus $PWD/examples/Example5_SetTemperatureLimits/Example5_SetTemperatureLimits.ino
+- arduino --verify --board SparkFun:samd:samd51_thing_plus $PWD/examples/Example6_SetConversionCycleTime/Example6_SetConversionCycleTime.ino
+- arduino --verify --board SparkFun:samd:samd51_thing_plus $PWD/examples/Example7_AdvancedI2CFunctions/Example7_AdvancedI2CFunctions.ino
 
