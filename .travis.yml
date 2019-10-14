@@ -58,5 +58,5 @@ script:
 
 #compile for Adafruit Pro Trinket 5
 - echo Compiling for AdaFruit Pro Trinket 5...
-- arduino --verify --board Adafruit:protrinket:protrinket5 $PWD/examples/Example1_BasicReadings/Example1_BasicReadings.ino
+- arduino --verify --board Adafruit:trinket:protrinket5 $PWD/examples/Example1_BasicReadings/Example1_BasicReadings.ino
 
