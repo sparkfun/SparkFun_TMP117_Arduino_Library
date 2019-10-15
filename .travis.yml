@@ -70,4 +70,4 @@ script:
 
 #compile for Teensy36
 - echo Compiling for Teensy 3.6...
-- arduino --verify --board teensyduino:avr:teensy36 $PWD/examples/Example1_BasicReadings/Example1_BasicReadings.ino
+- arduino --verify --board teensyduino:avr:teensy36:usb=serial,speed=180,opt=o2std,keys=en-us $PWD/examples/Example1_BasicReadings/Example1_BasicReadings.ino
