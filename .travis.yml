@@ -8,7 +8,7 @@ before_install:
 - sudo mv arduino-1.8.9 /usr/local/share/arduino
 - sudo ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino
 
-  # Arduino IDE adds a lot of noise caused by network traffic, trying to firewall it off
+# Arduino IDE adds a lot of noise caused by network traffic, trying to firewall it off
 - sudo iptables -P INPUT DROP
 - sudo iptables -P FORWARD DROP
 - sudo iptables -P OUTPUT ACCEPT
