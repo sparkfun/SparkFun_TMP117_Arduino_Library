@@ -23,7 +23,6 @@ install:
 - arduino --install-boards SparkFun:apollo3
 - arduino --install-boards SparkFun:avr
 - arduino --install-boards adafruit:avr
-- arduino --install-boards teensyduino:avr
   
 script:
 #compile for SparkFun RedBoard
