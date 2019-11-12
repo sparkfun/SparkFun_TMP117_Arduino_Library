@@ -266,6 +266,48 @@ bool TMP117::getLowAlert()
 	}
 }
 
+/*SET ALERT FUNCTION MODE
+	This function sets the alert function mode to either "alert" or
+	"therm" mode. This can be found on page 25 of the datasheet.
+*/
+void TMP117::setAlertFunctionMode(uint8_t setAlertMode)
+{
+         uint16_t AlertFunctionMode = 0;
+         AlertFunctionMode = readRegister(TMP117_CONFIGURATION); // Fills mode to be the config register
+
+         if (setAlertMode == 1) // 1: Therm mode
+         {
+           bitWrite(AlertFunctionMode, 4, 1); //set register bit to be 1
+           writeRegister(TMP117_CONFIGURATION, AlertFunctionMode);
+         }
+         else // 0: alert mode
+         {
+           bitClear(AlertFunctionMode, 4); //set register bit to be 0
+           writeRegister(TMP117_CONFIGURATION, AlertFunctionMode);
+         }
+}
+
+/*GET ALERT FUNCTION MODE
+	This function gets the alert function mode to either "alert" or 
+	"therm" mode. This can be found on page 25 of the datasheet.
+*/
+uint8_t TMP117::getAlertFunctionMode()
+{
+        uint16_t configReg = 0;
+	configReg = readRegister(TMP117_CONFIGURATION); // Fill configReg with the configuration register
+
+	uint8_t currentAlertMode = bitRead(configReg, 4); //Get the value from the Therm/alert mode ("T/nA") select field
+
+	if (currentAlertMode == 1)//if "therm" mode
+	{
+                return 1;
+        }
+        else //if "alert" mode
+        {
+                return 0;
+        }
+}
+
 /* SOFTWARE RESET
 	This function performs a software reset, loading all the default
 	values into the configuration register. A table of the configuration
