@@ -78,8 +78,12 @@ public:
 	void setLowLimit(float lowLimit);									// Sets the low limit temperature for the low limit register
 	float getHighLimit();												// Returns the high limit register
 	void setHighLimit(float highLimit);									// Sets the low limit temperature for the low limit register
+	uint16_t getConfigurationRegister();								// Get Configuration Register
+	uint8_t getHighLowAlert();											// Reads in Alert mode for high and low alert flags
 	bool getHighAlert();												// Reads in Alert mode for a high alert flag
 	bool getLowAlert();													// Reads in Alert mode for a low alert flag
+	void setAlertFunctionMode(uint8_t setAlertMode);					// Set alert or therm mode
+	uint8_t getAlertFunctionMode();                                     // Check to see if in alert or therm mode
 	uint8_t getConversionMode();										// Checks to see the Conversion Mode the device is currently in
 	void setContinuousConversionMode();									// Sets the Conversion Mode of the Device to be Continuous
 	void setOneShotMode();												// Sets the Conversion Mode of the Device to be One Shot

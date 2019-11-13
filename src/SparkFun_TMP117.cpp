@@ -3,7 +3,7 @@ SparkFunTMP117.cpp
 SparkFunTMP117 Library Source File
 Madison Chodikov @ SparkFun Electronics
 Original Creation Date: April 22, 2019
-https://github.com/sparkfunX/Qwiic_TMP117
+https://github.com/sparkfun/SparkFun_TMP117_Arduino_Library
 
 This file implements all functions of the TMP117 class. Functions here range
 from reading the temperature from the sensor, to reading and writing various
@@ -220,8 +220,43 @@ void TMP117::setHighLimit(float highLimit)
 	writeRegister(TMP117_T_HIGH_LIMIT, finalLimit);		// Writes to the high limit temperature register with the new limit value
 }
 
+/*GET CONFIGURATION REGISTER
+	This function reads configuration register. Use this function if you need to read
+	certain flags before they are cleared. This can be found on page 25 of the
+	datasheet.
+*/
+uint16_t TMP117::getConfigurationRegister()
+{
+	uint16_t configReg = 0;
+	configReg = readRegister(TMP117_CONFIGURATION);
+	
+	return configReg;
+}
+
+/*GET HIGH AND LOW ALERT
+	This function reads configuration register and saves the high and low alert flags. 
+	Use this function if you need to read the alert flags before they are cleared.
+	This can be found on page 25 of the datasheet.
+*/
+uint8_t TMP117::getHighLowAlert()
+{
+	uint16_t configReg = 0; 
+	configReg = readRegister(TMP117_CONFIGURATION);; //Grab what is in the configuration register
+
+	uint8_t highlowAlert = 0;//temporary variable to hold high and low alert flags
+	//Get high alert flag from 15th bit of the configuration register,
+	//    then write bit to highlowAlert's 2nd position from the right
+	bitWrite(highlowAlert, 1, bitRead(configReg, 15));
+
+	//Get high alert flag from 14th bit of the configuration register,
+	//    then write bit to highlowAlert's 1st position from the right
+	bitWrite(highlowAlert, 0, bitRead(configReg, 14));
+
+	return highlowAlert; //return high and low alert flags
+}
+
 /*GET HIGH ALERT
-	This function reads the 15th bit of the configuration register to 
+	This function reads the 15th bit of the configuration register to
 	tell if the conversion result is higher than the high limit. This
 	is set as a High Alert flag. This can be found on page 25 of the 
 	datasheet.
@@ -229,7 +264,7 @@ void TMP117::setHighLimit(float highLimit)
 bool TMP117::getHighAlert()
 {
 	uint16_t configReg = 0;
-	configReg = readRegister(TMP117_CONFIGURATION);
+	configReg = readRegister(TMP117_CONFIGURATION);; //Grab what is in the configuration register
 
 	uint8_t highAlert = bitRead(configReg, 15); // Fills with the 15th bit of the configuration register
 
@@ -252,7 +287,7 @@ bool TMP117::getHighAlert()
 bool TMP117::getLowAlert()
 {
 	uint16_t configReg = 0;
-	configReg = readRegister(TMP117_CONFIGURATION);
+	configReg = readRegister(TMP117_CONFIGURATION);; //Grab what is in the configuration register
 
 	uint8_t lowAlert = bitRead(configReg, 14); // Fills with the 14th bit of the configuration register
 
@@ -263,6 +298,48 @@ bool TMP117::getLowAlert()
 	else
 	{
 		return false;
+	}
+}
+
+/*SET ALERT FUNCTION MODE
+	This function sets the alert function mode to either "alert" or
+	"therm" mode. This can be found on page 25 of the datasheet.
+*/
+void TMP117::setAlertFunctionMode(uint8_t setAlertMode)
+{
+	uint16_t AlertFunctionMode = 0;
+	AlertFunctionMode = readRegister(TMP117_CONFIGURATION); // Fills mode to be the config register
+
+	if (setAlertMode == 1) // 1: Therm mode
+	{
+		bitWrite(AlertFunctionMode, 4, 1); //set register bit to be 1
+		writeRegister(TMP117_CONFIGURATION, AlertFunctionMode);
+	}
+	else // 0: alert mode
+	{
+		bitClear(AlertFunctionMode, 4); //set register bit to be 0
+		writeRegister(TMP117_CONFIGURATION, AlertFunctionMode);
+	}
+}
+
+/*GET ALERT FUNCTION MODE
+	This function gets the alert function mode to either "alert" or 
+	"therm" mode. This can be found on page 25 of the datasheet.
+*/
+uint8_t TMP117::getAlertFunctionMode()
+{
+	uint16_t configReg = 0;
+	configReg = readRegister(TMP117_CONFIGURATION); // Fill configReg with the configuration register
+
+	uint8_t currentAlertMode = bitRead(configReg, 4); //Get the value from the Therm/alert mode ("T/nA") select field
+
+	if (currentAlertMode == 1)//if "therm" mode
+	{
+		return 1;
+	}
+	else //if "alert" mode
+	{
+		return 0;
 	}
 }
 
