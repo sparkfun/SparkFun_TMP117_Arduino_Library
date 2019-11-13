@@ -13,7 +13,7 @@
 
   Resources:
   Wire.h (included with Arduino IDE)
-  SparkFunTMP117.h (included in the src folder)
+  SparkFunTMP117.h (included in the src folder) http://librarymanager/All#SparkFun_TMP117
 
   Development environment specifics:
   Arduino 1.8.9+

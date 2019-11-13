@@ -1,5 +1,5 @@
 /******************************************************************************
-  SparkFun_TMP117_Breakout_Example.ino
+  Example4_SetConversionMode.ino
   Example for the TMP117 I2C Temperature Sensor
   Madison Chodikov @ SparkFun Electronics
   May 29 2019
@@ -11,7 +11,7 @@
 
   Resources:
   Wire.h (included with Arduino IDE)
-  SparkFunTMP117.h (included in the src folder)
+  SparkFunTMP117.h (included in the src folder) http://librarymanager/All#SparkFun_TMP117
 
   Development environment specifics:
   Arduino 1.8.9+

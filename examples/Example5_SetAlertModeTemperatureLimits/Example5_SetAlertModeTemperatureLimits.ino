@@ -14,7 +14,7 @@
 
   Resources:
   Wire.h (included with Arduino IDE)
-  SparkFunTMP117.h (included in the src folder)
+  SparkFunTMP117.h (included in the src folder) http://librarymanager/All#SparkFun_TMP117
 
   Development environment specifics:
   Arduino 1.8.9+
@@ -50,7 +50,7 @@ void setup()
   Serial.begin(115200);    // Start serial communication at 115200 baud
   Wire.setClock(400000);   // Set clock speed to be the fastest for better communication (fast mode)
 
-  Serial.println("TMP117 Example 5: Setting High and Low Temperature Limits");
+  Serial.println("TMP117 Example 5: Setting Alert Function Mode and Temperature Limits");
   if (sensor.begin() == true) // Function to check if the sensor will correctly self-identify with the proper Device ID/Address
   {
     Serial.println("Begin");
