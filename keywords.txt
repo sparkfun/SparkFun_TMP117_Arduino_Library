@@ -21,6 +21,8 @@ getLowLimit	KEYWORD2
 setLowLimit	KEYWORD2
 getHighLimit	KEYWORD2
 setHighLimit	KEYWORD2
+getConfigurationRegister	KEYWORD2
+getHighLowAlert	KEYWORD2
 getHighAlert	KEYWORD2
 getLowAlert	KEYWORD2
 setAlertFunctionMode	KEYWORD2

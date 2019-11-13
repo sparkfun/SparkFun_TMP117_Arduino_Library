@@ -1,14 +1,16 @@
 /******************************************************************************
- Example5_SetTemperatureLimits.ino
+  Example5_SetAlertModeTemperatureLimits.ino
   Example for the TMP117 I2C Temperature Sensor
   Madison Chodikov @ SparkFun Electronics
   June 11 2019
   ~
 
-  This sketch can set and get the temperature limits for the sensor. These
-  limits can be set within +/- 256°C. When the temperature goes above/below the 
-  specified temperature limits, it will cause the alert pins to go high. To
-  access these registers, please reference Example 2: Alert Statuses
+  
+  This sketch can set and get the Alert Function Mode, Low Temperature 
+  Limit, and High Temperature Limit for the sensor. These limits can
+  be set within +/- 256°C. When the temperature goes above/below the 
+  specified temperature limits, it will cause the alert pins to go
+  high. To access these registers, please reference Example 2: Alert Statuses.
 
   Resources:
   Wire.h (included with Arduino IDE)
@@ -59,10 +61,13 @@ void setup()
     while (1); // Runs forever if the sensor does not initialize correctly
   }
 
+  Serial.print("Current Alert Function Mode: ");
+  Serial.println(sensor.getAlertFunctionMode());
   Serial.print("Current Low Limit: ");
   Serial.println(sensor.getLowLimit()); // Returns the low limit temperature in °C
   Serial.print("Current High Limit: ");
   Serial.println(sensor.getHighLimit()); // Returns the high limit temperature in °C
+  Serial.println(" ");
 }
 
 
@@ -70,17 +75,45 @@ void setup()
 void loop()
 {
   float lowTemp, highTemp;
-  Serial.println("Enter which limit to change, 1 for Low Limit and 2 for High Limit: ");
+  int alertMode;
+  Serial.println("Enter a value to change the alert function mode, low limit, or high limit.");
+  Serial.println("0 for Alert Function Mode, 1 for Low Limit, and 2 for High Limit: ");
+  
   while (Serial.available() == 0); // Waits for the user input
-  int limit = Serial.parseInt(); // Reads the input from the serial port
-  if (limit == 1)
+  int menu_option = Serial.parseInt(); // Reads the input from the serial port
+
+  if (menu_option == 0)
+  {
+    Serial.print("Current Alert Function Mode: ");
+    Serial.println(sensor.getAlertFunctionMode());
+    Serial.println("Please enter mode(0 or 1): ");
+    while (Serial.available() == 0); // Waits for the user input
+    alertMode = Serial.parseFloat();
+    if (alertMode == 0)
+    {
+      sensor.setAlertFunctionMode(0);//set to alert mode
+      Serial.print("New Alert Function Mode: ");
+      Serial.println(sensor.getAlertFunctionMode());
+    }
+    else if (alertMode == 1)
+    {
+      sensor.setAlertFunctionMode(1);//set to therm mode
+      Serial.print("New Alert Function Mode: ");
+      Serial.println(sensor.getAlertFunctionMode());
+    }
+    else
+    {
+      Serial.println("Please enter the Alert Function Mode (either 0 or 1)");
+    }
+  }
+  else if (menu_option == 1)
   {
     Serial.print("Current Low Limit: ");
     Serial.println(sensor.getLowLimit());
     Serial.println("Please enter Low Limit Temperature (between -256°C and 255.98°C): ");
     while (Serial.available() == 0); // Waits for the user input
     lowTemp = Serial.parseFloat();
-    if ((lowTemp >= -256) && (lowTemp < 255.99)) 
+    if ((lowTemp >= -256) && (lowTemp < 255.99))
     {
       sensor.setLowLimit(lowTemp);
       Serial.print("New Low Limit (in °C): ");
@@ -88,11 +121,11 @@ void loop()
     }
     else
     {
-      Serial.println("Please Enter a temperature between -256°C and 255.98°C");
+      Serial.println("Please enter a temperature between -256°C and 255.98°C");
     }
 
   }
-  else if (limit == 2)
+  else if (menu_option == 2)
   {
     Serial.print("Current High Limit: ");
     Serial.println(sensor.getHighLimit());
@@ -107,12 +140,13 @@ void loop()
     }
     else
     {
-      Serial.println("Please Enter a temperature between -256°C and 255.98°C");
+      Serial.println("Please enter a temperature between -256°C and 255.98°C");
     }
   }
   else
   {
-    Serial.println("Please enter 1 or 2");
+    Serial.println("Please enter 0, 1, or 2");
   }
   Serial.println(""); // Create a whitespace for easier readings
 }
+
