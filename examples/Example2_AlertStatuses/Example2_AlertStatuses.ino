@@ -2,14 +2,18 @@
   Example2_AlertStatuses.ino
   Example for the TMP117 I2C Temperature Sensor
   Modified by: Ho Yun "Bobby" Chan @ SparkFun Electronics
-  Date Modified:November 12, 2019
+  Date Modified: November 12, 2019
   Written by: Madison Chodikov @ SparkFun Electronics
   Date: May 29 2019
   ~
 
-  This sketch reads the TMP117 temperature sensor and prints the
-  high limit, low limit, alert function mode, temperature in °C,
-  and alert state of the temperature sensor.
+  This sketch sets the TMP117 temperature sensor's high limit,
+  low limit, and alert function mode. Once set, we read the 
+  temperature in °C and checks alert status. If we are outside
+  of the boundary, we will output a message indicating
+  that we are beyond the limit. The alert statuses is dependent
+  on the mode so make sure to 
+  
 
   Resources:
   Wire.h (included with Arduino IDE)
@@ -64,10 +68,19 @@ void setup()
 
   Serial.println("");
   Serial.println("Note: Make sure to configure the your High and");
-  Serial.println("Low Temperature Limits. These will values");
-  Serial.println("will be cleared on power cycle since it is");
-  Serial.println("only saved in the volatile registers. Make");
-  Serial.println("sure to look at Example 5 in the library!");
+  Serial.println("Low Temperature Limits. These values will");
+  Serial.println("be cleared on power cycle since it is only");
+  Serial.println("saved in the volatile registers. This code");
+  Serial.println("sets it manually. You can look at Example 5");
+  Serial.println("in the library for more ideas!");
+
+  /*Note: Set the high and low limits. Make sure to set limits
+    between -256°C and 255.99°C. For quick testing at room
+    temperature that is about 20°C-25°C, we can use the heat
+    from our hand or lightly breathing on the sensor. Adjust
+    as necessary.*/
+  sensor.setHighLimit(25.50); //set high limit to 25.50°C
+  sensor.setLowLimit(25.00);  //set low limit to 25.00°C
 
   //Get High Temperature Limit
   Serial.println("");
@@ -81,9 +94,9 @@ void setup()
   Serial.print("°C");
   Serial.println("");
 
-  /*Note: Uncomment 1 of the lines below by removing the `//`
-    to set to alert or therm mode*/
-  //sensor.setAlertFunctionMode(0);//set to alert mode
+  /*Note: Set to alert or therm mode. To change, simply adjust
+    add or remove a `//` to the line.*/
+  sensor.setAlertFunctionMode(0);//set to alert mode
   //sensor.setAlertFunctionMode(1);//set to therm mode
 
   /*Get "Alert Function Mode" Bit from configuration register
@@ -117,9 +130,11 @@ void loop()
     Serial.print("Current Temperature: ");
     Serial.print(sensor.readTempC());
     Serial.println("°C");
-    //add short delay before reading the again configuration register
-    //adjust this value as necessary based on your conversion cycle time
-    delay(500);//wait a little before grabbing
+    /*Note: Add short delay before reading the again configuration register
+      adjust this value as necessary based on your conversion cycle time.
+      Default conversion time for AVG = 1 and CONV = 4 about 1 second. Therefore,
+      a value of between 1-3 seconds should be sufficient.*/
+    delay(1500);//wait a little before grabbing
 
     AlertFlag = sensor.getHighLowAlert(); //read the alert flags from the configuration register
     H_AlertFlag = bitRead(AlertFlag, 1); //grab the high alert field using bitwise operator and save current to H_AlertFlag
@@ -160,4 +175,3 @@ void loop()
     delay(500); // Delay for a 1/2 second before printing again if the data is ready
   }
 }
-
