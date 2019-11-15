@@ -29,7 +29,7 @@ Documentation
 Products that use this Repository
 --------------
 
-* [ROB-13166](https://www.sparkfun.com/products/15805)- SparkFun Version
+* [SEN-13166](https://www.sparkfun.com/products/15805)- SparkFun Version
 * [SPX-15413](https://www.sparkfun.com/products/15413)- SparkX Version
 
 License Information
