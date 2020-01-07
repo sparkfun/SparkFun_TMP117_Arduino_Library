@@ -98,12 +98,12 @@ uint16_t TMP117::readRegister(uint8_t reg) // originally TMP117_Register reg
 	_i2cPort->endTransmission();					   // endTransmission but keep the connection active
 	_i2cPort->requestFrom(_deviceAddress, (uint8_t)2); // Ask for 2 bytes, once done, bus is released by default
 
-	uint8_t data[2] = {0};	 // Declares an array of length 2 to be empty
-	int16_t datac = 0;		   // Declares the return variable to be 0
-	if (Wire.available() <= 2) // Won't read more than 2 bits
+	uint8_t data[2] = {0};			// Declares an array of length 2 to be empty
+	int16_t datac = 0;				// Declares the return variable to be 0
+	if (_i2cPort->available() <= 2) // Won't read more than 2 bits
 	{
-		data[0] = Wire.read();				// Reads the first set of bits (D15-D8)
-		data[1] = Wire.read();				// Reads the second set of bits (D7-D0)
+		data[0] = _i2cPort->read();			// Reads the first set of bits (D15-D8)
+		data[1] = _i2cPort->read();			// Reads the second set of bits (D7-D0)
 		datac = ((data[0] << 8) | data[1]); // Swap the LSB and the MSB
 	}
 	return datac;
@@ -229,7 +229,7 @@ uint16_t TMP117::getConfigurationRegister()
 {
 	uint16_t configReg = 0;
 	configReg = readRegister(TMP117_CONFIGURATION);
-	
+
 	return configReg;
 }
 
@@ -240,10 +240,10 @@ uint16_t TMP117::getConfigurationRegister()
 */
 uint8_t TMP117::getHighLowAlert()
 {
-	uint16_t configReg = 0; 
-	configReg = readRegister(TMP117_CONFIGURATION);; //Grab what is in the configuration register
+	uint16_t configReg = 0;
+	configReg = readRegister(TMP117_CONFIGURATION); //Grab what is in the configuration register
 
-	uint8_t highlowAlert = 0;//temporary variable to hold high and low alert flags
+	uint8_t highlowAlert = 0; //temporary variable to hold high and low alert flags
 	//Get high alert flag from 15th bit of the configuration register,
 	//    then write bit to highlowAlert's 2nd position from the right
 	bitWrite(highlowAlert, 1, bitRead(configReg, 15));
@@ -264,7 +264,7 @@ uint8_t TMP117::getHighLowAlert()
 bool TMP117::getHighAlert()
 {
 	uint16_t configReg = 0;
-	configReg = readRegister(TMP117_CONFIGURATION);; //Grab what is in the configuration register
+	configReg = readRegister(TMP117_CONFIGURATION); //Grab what is in the configuration register
 
 	uint8_t highAlert = bitRead(configReg, 15); // Fills with the 15th bit of the configuration register
 
@@ -287,7 +287,7 @@ bool TMP117::getHighAlert()
 bool TMP117::getLowAlert()
 {
 	uint16_t configReg = 0;
-	configReg = readRegister(TMP117_CONFIGURATION);; //Grab what is in the configuration register
+	configReg = readRegister(TMP117_CONFIGURATION); //Grab what is in the configuration register
 
 	uint8_t lowAlert = bitRead(configReg, 14); // Fills with the 14th bit of the configuration register
 
@@ -333,7 +333,7 @@ uint8_t TMP117::getAlertFunctionMode()
 
 	uint8_t currentAlertMode = bitRead(configReg, 4); //Get the value from the Therm/alert mode ("T/nA") select field
 
-	if (currentAlertMode == 1)//if "therm" mode
+	if (currentAlertMode == 1) //if "therm" mode
 	{
 		return 1;
 	}
@@ -436,6 +436,10 @@ uint8_t TMP117::getConversionMode()
 	{
 		return 3;
 	}
+	else
+	{
+		return 1; //Default
+	}
 }
 
 /*SET CONVERSION AVERAGE MODE 
@@ -502,6 +506,10 @@ uint8_t TMP117::getConversionAverageMode()
 	else if ((currentMode6 == 1) && (currentMode5 == 1)) // 0b11, 64 averaged conversions
 	{
 		return 0b11;
+	}
+	else
+	{
+		return 0b00; //No averaging
 	}
 }
 
@@ -645,6 +653,10 @@ uint8_t TMP117::getConversionCycleBit()
 	else if ((currentTime9 == 1) && (currentTime8 == 1) && (currentTime7 == 1)) // 0b111
 	{
 		return 0b111;
+	}
+	else
+	{
+		return 0b000; //Default
 	}
 }
 
