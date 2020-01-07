@@ -35,18 +35,18 @@ Distributed as-is; no warranty is given.
 typedef union {
 	struct
 	{
-		uint8_t EMPTY : 1;		 // Empty bit in register
-		uint8_t SOFT_RESET : 1;  // Software reset bit
-		uint8_t DR_ALERT : 1;	// ALERT pin select bit
-		uint8_t POL : 1;		 // ALERT pin polarity bit
-		uint8_t T_NA : 1;		 // Therm/alert mode select
-		uint8_t AVG : 2;		 // Conversion averaging modes
-		uint8_t CONV : 3;		 // Conversion cycle bit
-		uint8_t MOD : 2;		 // Set conversion mode
-		uint8_t EEPROM_BUSY : 1; // EEPROM busy flag
-		uint8_t DATA_READY : 1;  // Data ready flag
-		uint8_t LOW_ALERT : 1;   // Low Alert flag
-		uint8_t HIGH_ALERT : 1;  // High Alert flag
+		uint8_t EMPTY : 1;			// Empty bit in register
+		uint8_t TMP_SOFT_RESET : 1; // Software reset bit
+		uint8_t DR_ALERT : 1;		// ALERT pin select bit
+		uint8_t POL : 1;			// ALERT pin polarity bit
+		uint8_t T_NA : 1;			// Therm/alert mode select
+		uint8_t AVG : 2;			// Conversion averaging modes
+		uint8_t CONV : 3;			// Conversion cycle bit
+		uint8_t MOD : 2;			// Set conversion mode
+		uint8_t EEPROM_BUSY : 1;	// EEPROM busy flag
+		uint8_t DATA_READY : 1;		// Data ready flag
+		uint8_t LOW_ALERT : 1;		// Low Alert flag
+		uint8_t HIGH_ALERT : 1;		// High Alert flag
 	} CONFIGURATION_FIELDS;
 	uint8_t CONFIGURATION_COMBINED;
 } CONFIGURATION_REG;
@@ -83,7 +83,7 @@ public:
 	bool getHighAlert();												// Reads in Alert mode for a high alert flag
 	bool getLowAlert();													// Reads in Alert mode for a low alert flag
 	void setAlertFunctionMode(uint8_t setAlertMode);					// Set alert or therm mode
-	uint8_t getAlertFunctionMode();                                     // Check to see if in alert or therm mode
+	uint8_t getAlertFunctionMode();										// Check to see if in alert or therm mode
 	uint8_t getConversionMode();										// Checks to see the Conversion Mode the device is currently in
 	void setContinuousConversionMode();									// Sets the Conversion Mode of the Device to be Continuous
 	void setOneShotMode();												// Sets the Conversion Mode of the Device to be One Shot
