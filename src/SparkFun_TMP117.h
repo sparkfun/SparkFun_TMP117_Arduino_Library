@@ -48,7 +48,7 @@ typedef union {
 		uint8_t LOW_ALERT : 1;		// Low Alert flag
 		uint8_t HIGH_ALERT : 1;		// High Alert flag
 	} CONFIGURATION_FIELDS;
-	uint8_t CONFIGURATION_COMBINED;
+	uint16_t CONFIGURATION_COMBINED;
 } CONFIGURATION_REG;
 
 // Device ID Register used for checking if the device ID is the same as declared
