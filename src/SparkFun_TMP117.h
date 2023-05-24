@@ -94,12 +94,11 @@ public:
 	uint8_t getConversionCycleBit();									// Returns the conversion cycle time bit value
 	bool dataReady();													// Checks to see if there is data ready from the device
 
+	uint16_t readRegister(uint8_t reg);		// Reads 2 register bytes from sensor
+	void writeRegister(uint8_t reg, uint16_t data); // Wires single byte of data to the sensor
 private:
 	TwoWire *_i2cPort = NULL; //The generic connection to user's chosen I2C hardware
 	uint8_t _deviceAddress;   // Address of Temperature sensor
-
-	uint16_t readRegister(uint8_t reg);				// Reads 2 register bytes from sensor
-	void writeRegister(uint8_t reg, uint16_t data); // Wires single byte of data to the sensor
 };
 
 #endif
